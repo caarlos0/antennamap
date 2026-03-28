@@ -324,6 +324,12 @@ const map = L.map("map").setView([-24.8, -53.5], 9);
 
 if (!window.isSecureContext) {
   console.warn("Geolocation unavailable: page must be served over HTTPS.");
+} else if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(
+    pos => map.setView([pos.coords.latitude, pos.coords.longitude], 13),
+    err => console.warn("Geolocation failed:", err.message),
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+  );
 }
 
 const locateBtn = document.getElementById("locate-btn");
