@@ -261,6 +261,8 @@ const ICON_CAL  = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="
 
 function colorFor(a) { return TECH_COLOR[a.tecnologia] || "#888"; }
 
+const TECH_ZINDEX = { "5G": 400, "4G": 300, "3G": 200, "2G": 100 };
+
 function makeIcon(antenna) {
   const color = colorFor(antenna);
   const label = antenna.tecnologia === "Desconhecida" ? "?" : antenna.tecnologia;
@@ -353,7 +355,10 @@ fetch("antennas.json")
     });
 
     for (const antenna of data) {
-      const marker = L.marker([antenna.lat, antenna.lon], { icon: makeIcon(antenna) });
+      const marker = L.marker([antenna.lat, antenna.lon], {
+        icon: makeIcon(antenna),
+        zIndexOffset: TECH_ZINDEX[antenna.tecnologia] || 0,
+      });
       marker._antenna = antenna;
       marker.bindPopup(`
         <div class="popup-row">${ICON_RSS}${antenna.operadora}</div>
