@@ -327,19 +327,22 @@ if (!window.isSecureContext) {
 }
 
 const locateBtn = document.getElementById("locate-btn");
-map.on("locationfound", e => {
-  map.setView(e.latlng, 13);
-  locateBtn.classList.remove("locating", "error");
-});
-map.on("locationerror", e => {
-  console.warn("Geolocation failed:", e.message);
-  locateBtn.classList.remove("locating");
-  locateBtn.classList.add("error");
-});
 locateBtn.addEventListener("click", () => {
+  if (!navigator.geolocation) return;
   locateBtn.classList.add("locating");
   locateBtn.classList.remove("error");
-  map.locate({ setView: false, maximumAge: 300000, timeout: 10000 });
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      map.setView([pos.coords.latitude, pos.coords.longitude], 13);
+      locateBtn.classList.remove("locating", "error");
+    },
+    err => {
+      console.warn("Geolocation failed:", err.message);
+      locateBtn.classList.remove("locating");
+      locateBtn.classList.add("error");
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+  );
 });
 
 L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
