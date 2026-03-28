@@ -144,12 +144,24 @@ def normalize(value: str) -> str:
     return value.strip().strip('"')
 
 
+ENTITY_ALIASES = {
+    "TELEFÔNICA BRASIL S.A.": "Telefônica Brasil S.A.",
+    "TELEFONICA BRASIL S.A.": "Telefônica Brasil S.A.",
+    "Telefonica Brasil S.a.": "Telefônica Brasil S.A.",
+}
+
+
+def normalize_entity(name: str) -> str:
+    name = normalize(name)
+    return ENTITY_ALIASES.get(name, name)
+
+
 def to_json(rows: list[dict], municipio: str, seen: set) -> list[dict]:
     one_year_ago = date.today() - timedelta(days=365)
     antennas = []
 
     for row in rows:
-        entity = normalize(row.get("NomeEntidade", ""))
+        entity = normalize_entity(row.get("NomeEntidade", ""))
         raw_tech = normalize(row.get("Tecnologia", ""))
         lat_s = normalize(row.get("Latitude", ""))
         lon_s = normalize(row.get("Longitude", ""))
