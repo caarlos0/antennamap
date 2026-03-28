@@ -400,7 +400,7 @@ clusterGroup.addTo(map);
 function applyFilters() {
   clusterGroup.clearLayers();
   for (const { marker, antenna } of allMarkers) {
-    const techOk = activeTech === "Todos" || (activeTech === "nova" ? antenna.nova : antenna.allTechs.has(activeTech));
+    const techOk = activeTech === "Todos" || (activeTech === "nova" ? antenna.nova : antenna.tecnologia === activeTech);
     const opOk   = !activeOp || antenna.allOps.has(activeOp);
     if (techOk && opOk) clusterGroup.addLayer(marker);
   }
