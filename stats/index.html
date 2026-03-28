@@ -226,16 +226,7 @@
     .rank-item:last-child { border-bottom: none; }
     .rank-item .rank-val { color: var(--accent); font-weight: 600; }
 
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.78rem;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
-    }
 
-    footer a { color: var(--muted); }
-    footer a:hover { color: var(--text); }
   </style>
 </head>
 <body>
@@ -272,10 +263,7 @@
       <button class="filter-btn" data-tech="4G">4G</button>
       <button class="filter-btn" data-tech="3G">3G</button>
       <button class="filter-btn" data-tech="2G">2G</button>
-      <button class="filter-btn" data-tech="nova">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-        Novas
-      </button>
+
     </div>
     <div class="sep"></div>
     <span class="filter-label">
@@ -288,7 +276,7 @@
   </div>
 </header>
 
-
+<main>
   <div class="cards" id="summary-cards"></div>
 
   <section>
@@ -392,8 +380,6 @@ async function load() {
     fetch(dataBase + 'population.json').then(r => r.json()),
   ]);
   popData = pd;
-  document.getElementById('ibge-link').href = popData.url;
-
   // Build siteMaps: city -> Map<key, {techs: Set, ops: Set, isNew: bool}>
   const siteMaps = {};
   for (const a of antData) {
@@ -572,7 +558,7 @@ function sortedRows(rows) {
     const av = a[sortCol], bv = b[sortCol];
     return typeof av === 'string'
       ? sortDir * av.localeCompare(bv, 'pt-BR')
-      : sortDir * (bv - av);
+      : sortDir * (av - bv);
   });
 }
 
@@ -626,7 +612,11 @@ function initCharts() {
   });
 
   const initRows = deriveRows('Todos', '');
-  const ordered  = [...initRows].sort((a, b) => b.per10k - a.per10k);
+  const ordered  = [...initRows].sort((a, b) => {
+    const ta = Object.values(a.techs).reduce((s, v) => s + v, 0);
+    const tb = Object.values(b.techs).reduce((s, v) => s + v, 0);
+    return tb - ta;
+  });
   chartTech = new Chart(document.getElementById('chart-tech'), {
     type: 'bar',
     data: {
