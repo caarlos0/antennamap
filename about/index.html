@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sobre – Conectividade Costa Oeste</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%230c9'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z'/%3E%3C/svg%3E" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0d1117;
+      --surface: #161b22;
+      --border:  #30363d;
+      --text:    #e6edf3;
+      --muted:   #8b949e;
+      --accent:  #00cc99;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+    }
+
+    header {
+      padding: 8px 14px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      flex-shrink: 0;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 2px 0 6px;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 2px;
+      border-top: 1px solid var(--border);
+      padding: 2px 0;
+    }
+
+    .tab {
+      padding: 5px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-decoration: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: none;
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .icon-link {
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      transition: color 0.15s;
+      margin-left: auto;
+    }
+    .icon-link:hover { color: var(--text); }
+
+    header h1 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    header h1 svg { width: 16px; height: 16px; flex-shrink: 0; stroke: var(--accent); }
+
+    #about-content {
+      max-width: 640px;
+      margin: 4rem auto;
+      padding: 2rem;
+    }
+
+    #about-content p {
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+
+    #about-content a { color: var(--accent); text-decoration: none; }
+    #about-content a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+      Conectividade Costa Oeste Paraná
+    </h1>
+    <a href="https://github.com/caarlos0/antennamap" target="_blank" rel="noopener" class="icon-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+    </a>
+  </div>
+  <nav class="header-nav">
+    <button class="tab" id="tab-map" onclick="location.href='../'">Mapa</button>
+    <a href="../stats/" class="tab" id="tab-stats">Estatísticas</a>
+    <a href="../about/" class="tab active" id="tab-about">Sobre</a>
+  </nav>
+</header>
+
+<div id="about-content">
+  <p>Conceitualizado por <a href="https://caarlos0.dev" target="_blank" rel="noopener">Carlos A Becker</a> usando <a href="https://github.com/features/copilot" target="_blank" rel="noopener">GitHub Copilot</a>.</p>
+  <p>Dados de antenas: <a href="https://sistemas.anatel.gov.br" target="_blank" rel="noopener">ANATEL</a></p>
+  <p>Dados de população: <a href="https://www.ibge.gov.br" target="_blank" rel="noopener">IBGE</a></p>
+</div>
+
+</body>
+</html>
