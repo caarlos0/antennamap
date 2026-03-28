@@ -308,30 +308,9 @@
         });
       }
 
-      const REGION_CENTER = [-24.8, -53.5];
-      const MAX_DISTANCE_KM = 100;
+      const MAX_DISTANCE_KM = 50;
 
-      const map = L.map("map").setView(REGION_CENTER, 9);
-
-      if (!window.isSecureContext) {
-        console.warn(
-          "Geolocation unavailable: page must be served over HTTPS.",
-        );
-      } else if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const d = map.distance(REGION_CENTER, [
-              pos.coords.latitude,
-              pos.coords.longitude,
-            ]);
-            if (d / 1000 <= MAX_DISTANCE_KM) {
-              map.setView([pos.coords.latitude, pos.coords.longitude], 13);
-            }
-          },
-          (err) => console.warn("Geolocation failed:", err.message),
-          { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
-        );
-      }
+      const map = L.map("map").setView([-24.8, -53.5], 9);
 
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
@@ -504,6 +483,23 @@
             allMarkers.push({ marker, antenna });
           }
           applyFilters();
+
+          // Focus on user location only if near an actual antenna site
+          if (window.isSecureContext && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                const userLL = [pos.coords.latitude, pos.coords.longitude];
+                const isNearby = [...siteMap.values()].some(
+                  (s) =>
+                    map.distance(userLL, [s.lat, s.lon]) / 1000 <=
+                    MAX_DISTANCE_KM,
+                );
+                if (isNearby) map.setView(userLL, 13);
+              },
+              () => {},
+              { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+            );
+          }
         })
         .catch(() => console.error("erro ao carregar antennas.json"));
     </script>
