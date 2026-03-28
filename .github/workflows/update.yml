@@ -16,7 +16,9 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv run fetch.py
         working-directory: updater
+      - run: uv run ibge.py
+        working-directory: updater
       - run: ./compact.sh
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: update antennas data"
+          commit_message: "chore: update antennas and population data"
