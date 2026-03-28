@@ -37,9 +37,26 @@
       background: #1a1a1a;
       border-bottom: 1px solid #2a2a2a;
       display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .header-top {
+      display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
+    }
+
+    .header-filters {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       flex-wrap: wrap;
+    }
+
+    @media (min-width: 780px) {
+      header { flex-direction: row; align-items: center; gap: 14px; }
+      .header-filters { flex-wrap: nowrap; }
     }
 
     header h1 {
@@ -60,6 +77,10 @@
       height: 20px;
       background: #333;
       flex-shrink: 0;
+    }
+    @media (max-width: 779px) {
+      .sep { display: none; }
+      .filter-label { display: none; }
     }
 
     .filter-group {
@@ -117,13 +138,6 @@
       outline: none;
     }
     #operadora-select:hover { border-color: #555; }
-
-    #stats {
-      margin-left: auto;
-      font-size: 0.72rem;
-      color: #555;
-      white-space: nowrap;
-    }
 
     #map { flex: 1; }
 
@@ -235,12 +249,17 @@
 <body>
 
 <header>
-  <h1>
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
-    Conectividade Costa Oeste Paraná
-  </h1>
-  <div class="sep"></div>
-  <div class="filter-group">
+  <div class="header-top">
+    <h1>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+      Conectividade Costa Oeste Paraná
+    </h1>
+    <button id="locate-btn" style="margin-left:auto">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Minha localização
+    </button>
+  </div>
+  <div class="header-filters">
     <span class="filter-label">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
       Tecnologia
@@ -254,21 +273,13 @@
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
       Novas
     </button>
-  </div>
-  <div class="sep"></div>
-  <div class="filter-group">
+    <div class="sep"></div>
     <span class="filter-label">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
       Licenciado para
     </span>
     <select id="operadora-select"><option value="">Todos</option></select>
   </div>
-  <span id="stats"></span>
-  <div class="sep"></div>
-  <button id="locate-btn">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-    Minha localização
-  </button>
 </header>
 
 <div id="map"></div>
@@ -365,13 +376,11 @@ clusterGroup.addTo(map);
 
 function applyFilters() {
   clusterGroup.clearLayers();
-  let visible = 0;
-  for (const { marker, antenna } of allMarkers) {
+  let visible = 0;  for (const { marker, antenna } of allMarkers) {
     const techOk = activeTech === "Todos" || (activeTech === "nova" ? antenna.nova : antenna.tecnologia === activeTech);
     const opOk   = !activeOp || antenna.operadora === activeOp;
     if (techOk && opOk) { clusterGroup.addLayer(marker); visible++; }
   }
-  document.getElementById("stats").textContent = `${visible} / ${allMarkers.length}`;
 }
 
 document.querySelectorAll(".filter-btn").forEach(btn => {
@@ -416,9 +425,7 @@ fetch("antennas.json")
     }
     applyFilters();
   })
-  .catch(() => {
-    document.getElementById("stats").textContent = "erro ao carregar antennas.json";
-  });
+  .catch(() => console.error("erro ao carregar antennas.json"));
 </script>
 </body>
 </html>
