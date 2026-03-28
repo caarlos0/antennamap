@@ -1,338 +1,546 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Conectividade Costa Oeste – Paraná</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%230c9'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z'/%3E%3C/svg%3E" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conectividade Costa Oeste – Paraná</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%230c9'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z'/%3E%3C/svg%3E"
+    />
 
-  <meta property="og:title" content="Conectividade Costa Oeste – Paraná" />
-  <meta property="og:description" content="Mapa de antenas licenciadas pela ANATEL na região Costa Oeste do Paraná." />
-  <meta property="og:image" content="../og-image.png" />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Conectividade Costa Oeste – Paraná" />
-  <meta name="twitter:description" content="Mapa de antenas licenciadas pela ANATEL na região Costa Oeste do Paraná." />
-  <meta name="twitter:image" content="../og-image.png" />
+    <meta property="og:title" content="Conectividade Costa Oeste – Paraná" />
+    <meta
+      property="og:description"
+      content="Mapa de antenas licenciadas pela ANATEL na região Costa Oeste do Paraná."
+    />
+    <meta property="og:image" content="../og-image.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Conectividade Costa Oeste – Paraná" />
+    <meta
+      name="twitter:description"
+      content="Mapa de antenas licenciadas pela ANATEL na região Costa Oeste do Paraná."
+    />
+    <meta name="twitter:image" content="../og-image.png" />
 
-  <link rel="stylesheet" href="../shared.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="../shared.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+    />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
-  <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      height: 100dvh;
-    }
-
-    /* ── Map ───────────────────────── */
-    #map { flex: 1; }
-
-    /* ── Markers ─────────────────────────────── */
-    .marker-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 4px;
-      background: rgba(15,15,15,0.85);
-      border: 1.5px solid currentColor;
-      font-size: 10px;
-      font-weight: 700;
-      font-family: system-ui, sans-serif;
-      letter-spacing: 0.03em;
-      padding: 2px 5px;
-      white-space: nowrap;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
-      backdrop-filter: blur(2px);
-    }
-    .marker-icon.nova { box-shadow: 0 0 8px currentColor, 0 1px 4px rgba(0,0,0,0.5); }
-
-    .cluster-icon {
-      display: flex;
-      gap: 5px;
-      align-items: center;
-      background: rgba(15,15,15,0.92);
-      border: 1.5px solid #444;
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 11px;
-      font-weight: 700;
-      font-family: system-ui, sans-serif;
-      white-space: nowrap;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
-      backdrop-filter: blur(3px);
-    }
-    .cluster-icon span { display: flex; align-items: baseline; gap: 2px; }
-    .cluster-icon small { font-size: 9px; font-weight: 600; opacity: 0.9; }
-
-    #legend {
-      position: absolute;
-      bottom: 28px; right: 10px;
-      z-index: 1000;
-      background: rgba(20,20,20,0.9);
-      border: 1px solid #2a2a2a;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 0.72rem;
-      backdrop-filter: blur(4px);
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      pointer-events: none;
-    }
-    .legend-row { display: flex; align-items: center; gap: 7px; color: #ccc; }
-    .legend-badge {
-      display: inline-flex; align-items: center; justify-content: center;
-      border-radius: 3px; border: 1.5px solid currentColor;
-      font-size: 9px; font-weight: 700; padding: 1px 5px;
-      background: rgba(15,15,15,0.85); min-width: 28px;
-    }
-
-    .leaflet-popup-content-wrapper {
-      background: #1a1a1a; color: #ddd;
-      border: 1px solid #333; border-radius: 6px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-    }
-    .leaflet-popup-tip { background: #1a1a1a; }
-    .leaflet-popup-content { font-size: 0.8rem; line-height: 1.8; margin: 10px 14px; }
-    .leaflet-popup-content strong { color: #fff; }
-    .popup-row { display: flex; align-items: center; gap: 5px; }
-    .popup-row svg { width: 13px; height: 13px; opacity: 0.5; flex-shrink: 0; }
-  </style>
-</head>
-<body>
-
-<header>
-  <div class="header-top">
-    <h1>
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
-      Conectividade Costa Oeste Paraná
-    </h1>
-    <nav class="header-nav">
-      <a class="tab active" href="./">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-        Mapa
-      </a>
-      <a class="tab" href="../stats/">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
-        Estatísticas
-      </a>
-      <a class="tab" href="../about/">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-        Sobre
-      </a>
-    </nav>
-  </div>
-  <div class="header-filters">
-    <div class="filter-row">
-      <span class="filter-label">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
-        Tecnologia
-      </span>
-      <div class="filter-group">
-        <button class="filter-btn" data-tech="Todos">Todos</button>
-        <button class="filter-btn" data-tech="5G">5G</button>
-        <button class="filter-btn" data-tech="4G">4G</button>
-        <button class="filter-btn" data-tech="3G">3G</button>
-        <button class="filter-btn" data-tech="2G">2G</button>
-        <button class="filter-btn" data-tech="nova">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-          Novas
-        </button>
-      </div>
-    </div>
-    <div class="sep"></div>
-    <div class="filter-row">
-      <span class="filter-label">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
-        Operadora
-      </span>
-      <div class="filter-group" id="op-filter-group">
-        <button class="filter-btn" data-op="">Todos</button>
-      </div>
-    </div>
-  </div>
-</header>
-
-<div id="map"></div>
-
-<div id="legend">
-  <div class="legend-row"><span class="legend-badge" style="color:#f04">5G</span> NR (5G)</div>
-  <div class="legend-row"><span class="legend-badge" style="color:#0c9">4G</span> LTE (4G)</div>
-  <div class="legend-row"><span class="legend-badge" style="color:#fa0">3G</span> WCDMA (3G)</div>
-  <div class="legend-row"><span class="legend-badge" style="color:#88f">2G</span> GSM (2G)</div>
-  <div class="legend-row" style="margin-top:2px;border-top:1px solid #2a2a2a;padding-top:5px">
-    <span class="legend-badge" style="color:#0c9;box-shadow:0 0 6px #0c9">4G</span> licenciada no último ano
-  </div>
-</div>
-
-<script>
-// ── Map logic ────────────────────────────────────────────────────────────────
-const TECH_COLOR    = { "5G": "#f04", "4G": "#0c9", "3G": "#fa0", "2G": "#88f" };
-const USER_FACING_TECH = new Set(Object.keys(TECH_COLOR));
-const ICON_RSS  = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>`;
-const ICON_CHIP = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>`;
-const ICON_CAL  = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
-const TECH_PRIORITY = ["5G", "4G", "3G", "2G"];
-
-function bestTech(a, b) {
-  return TECH_PRIORITY.indexOf(a) <= TECH_PRIORITY.indexOf(b) ? a : b;
-}
-function colorFor(a) { return TECH_COLOR[a.tecnologia] || "#888"; }
-const TECH_ZINDEX = { "5G": 400, "4G": 300, "3G": 200, "2G": 100 };
-
-function makeIcon(antenna) {
-  const color = colorFor(antenna);
-  const label = antenna.tecnologia === "Desconhecida" ? "?" : antenna.tecnologia;
-  const w = label.length <= 2 ? 28 : label.length * 8 + 10;
-  return L.divIcon({
-    className: "",
-    html: `<div class="marker-icon${antenna.nova ? " nova" : ""}" style="color:${color};min-width:${w}px">${label}</div>`,
-    iconSize: [w, 20], iconAnchor: [w / 2, 10], popupAnchor: [0, -14],
-  });
-}
-
-const map = L.map("map").setView([-24.8, -53.5], 9);
-
-if (!window.isSecureContext) {
-  console.warn("Geolocation unavailable: page must be served over HTTPS.");
-} else if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(
-    pos => map.setView([pos.coords.latitude, pos.coords.longitude], 13),
-    err => console.warn("Geolocation failed:", err.message),
-    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
-  );
-}
-
-L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
-  subdomains: "abcd", maxZoom: 19,
-}).addTo(map);
-
-let allMarkers = [];
-let activeTech = localStorage.getItem('antennamap-tech') || 'Todos';
-let activeOp   = localStorage.getItem('antennamap-op') || '';
-
-function saveFilters() {
-  localStorage.setItem('antennamap-tech', activeTech);
-  localStorage.setItem('antennamap-op', activeOp);
-}
-
-const clusterGroup = L.markerClusterGroup({
-  disableClusteringAtZoom: 13, maxClusterRadius: 50, showCoverageOnHover: false,
-  iconCreateFunction(cluster) {
-    const counts = {};
-    for (const m of cluster.getAllChildMarkers()) {
-      const t = m._antenna.tecnologia;
-      counts[t] = (counts[t] || 0) + 1;
-    }
-    const parts = TECH_PRIORITY.filter(t => counts[t])
-      .map(t => `<span style="color:${TECH_COLOR[t]}">${counts[t]}<small>${t}</small></span>`);
-    return L.divIcon({ className: "", html: `<div class="cluster-icon">${parts.join("")}</div>`, iconSize: null });
-  },
-});
-clusterGroup.addTo(map);
-
-function applyFilters() {
-  clusterGroup.clearLayers();
-  for (const { marker, antenna } of allMarkers) {
-    const techOk = activeTech === "Todos" || (activeTech === "nova" ? antenna.nova : antenna.tecnologia === activeTech);
-    const opOk   = !activeOp || antenna.allOps.has(activeOp);
-    if (techOk && opOk) clusterGroup.addLayer(marker);
-  }
-}
-
-// Restore tech filter active state from localStorage
-document.querySelectorAll(".filter-btn[data-tech]").forEach(b => {
-  b.classList.toggle("active", b.dataset.tech === activeTech);
-});
-
-// Tech filter buttons
-document.querySelectorAll(".filter-btn[data-tech]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".filter-btn[data-tech]").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    activeTech = btn.dataset.tech;
-    saveFilters();
-    applyFilters();
-  });
-});
-
-// Operadora filter buttons (event delegation – buttons added dynamically)
-document.getElementById("op-filter-group").addEventListener("click", e => {
-  const btn = e.target.closest(".filter-btn[data-op]");
-  if (!btn) return;
-  document.querySelectorAll("#op-filter-group .filter-btn").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  activeOp = btn.dataset.op;
-  saveFilters();
-  applyFilters();
-});
-
-fetch("../antennas.json")
-  .then(r => r.json())
-  .then(data => {
-    data = data.filter(a => USER_FACING_TECH.has(a.tecnologia));
-
-    const siteMap = new Map();
-    for (const a of data) {
-      const key = `${a.lat.toFixed(3)},${a.lon.toFixed(3)}`;
-      if (!siteMap.has(key)) {
-        siteMap.set(key, {
-          lat: a.lat, lon: a.lon,
-          tecnologia: a.tecnologia,
-          municipio: a.municipio,
-          nova: a.nova, data: a.data,
-          allTechs: new Set([a.tecnologia]),
-          allOps:   new Set([a.operadora]),
-        });
-      } else {
-        const s = siteMap.get(key);
-        s.tecnologia = bestTech(s.tecnologia, a.tecnologia);
-        s.allTechs.add(a.tecnologia);
-        s.allOps.add(a.operadora);
-        if (a.nova) { s.nova = true; s.data = a.data; }
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        height: 100dvh;
       }
-    }
 
-    // Populate operadora filter buttons
-    const ops = [...new Set(data.map(a => a.operadora))].sort();
-    const opGroup = document.getElementById("op-filter-group");
-    ops.forEach(op => {
-      const btn = document.createElement("button");
-      btn.className = "filter-btn" + (op === activeOp ? " active" : "");
-      btn.dataset.op = op;
-      btn.textContent = op;
-      opGroup.appendChild(btn);
-    });
-    // If an op is active, deactivate the "Todos" button
-    if (activeOp) {
-      document.querySelector('#op-filter-group .filter-btn[data-op=""]').classList.remove('active');
-    } else {
-      document.querySelector('#op-filter-group .filter-btn[data-op=""]').classList.add('active');
-    }
+      /* ── Map ───────────────────────── */
+      #map {
+        flex: 1;
+      }
 
-    for (const antenna of siteMap.values()) {
-      const techList = TECH_PRIORITY.filter(t => antenna.allTechs.has(t)).join(" · ");
-      const opList   = [...antenna.allOps].sort().join(", ");
-      const marker = L.marker([antenna.lat, antenna.lon], {
-        icon: makeIcon(antenna),
-        zIndexOffset: TECH_ZINDEX[antenna.tecnologia] || 0,
+      /* ── Markers ─────────────────────────────── */
+      .marker-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        background: rgba(15, 15, 15, 0.85);
+        border: 1.5px solid currentColor;
+        font-size: 10px;
+        font-weight: 700;
+        font-family: system-ui, sans-serif;
+        letter-spacing: 0.03em;
+        padding: 2px 5px;
+        white-space: nowrap;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
+      }
+      .marker-icon.nova {
+        box-shadow:
+          0 0 8px currentColor,
+          0 1px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .cluster-icon {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        background: rgba(15, 15, 15, 0.92);
+        border: 1.5px solid #444;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        font-family: system-ui, sans-serif;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(3px);
+      }
+      .cluster-icon span {
+        display: flex;
+        align-items: baseline;
+        gap: 2px;
+      }
+      .cluster-icon small {
+        font-size: 9px;
+        font-weight: 600;
+        opacity: 0.9;
+      }
+
+      #legend {
+        position: absolute;
+        bottom: 28px;
+        right: 10px;
+        z-index: 1000;
+        background: rgba(20, 20, 20, 0.9);
+        border: 1px solid #2a2a2a;
+        border-radius: 6px;
+        padding: 8px 10px;
+        font-size: 0.72rem;
+        backdrop-filter: blur(4px);
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        pointer-events: none;
+      }
+      .legend-row {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: #ccc;
+      }
+      .legend-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 3px;
+        border: 1.5px solid currentColor;
+        font-size: 9px;
+        font-weight: 700;
+        padding: 1px 5px;
+        background: rgba(15, 15, 15, 0.85);
+        min-width: 28px;
+      }
+
+      .leaflet-popup-content-wrapper {
+        background: #1a1a1a;
+        color: #ddd;
+        border: 1px solid #333;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      }
+      .leaflet-popup-tip {
+        background: #1a1a1a;
+      }
+      .leaflet-popup-content {
+        font-size: 0.8rem;
+        line-height: 1.8;
+        margin: 10px 14px;
+      }
+      .leaflet-popup-content strong {
+        color: #fff;
+      }
+      .popup-row {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .popup-row svg {
+        width: 13px;
+        height: 13px;
+        opacity: 0.5;
+        flex-shrink: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-top">
+        <h1>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"
+            />
+          </svg>
+          Conectividade Costa Oeste Paraná
+        </h1>
+        <nav class="header-nav">
+          <a class="tab active" href="./">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+              />
+            </svg>
+            Mapa
+          </a>
+          <a class="tab" href="../stats/">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path
+                d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"
+              />
+            </svg>
+            Estatísticas
+          </a>
+          <a class="tab" href="../about/">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+              />
+            </svg>
+            Sobre
+          </a>
+        </nav>
+      </div>
+      <div class="header-filters">
+        <div class="filter-row">
+          <span class="filter-label">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+              />
+            </svg>
+            Tecnologia
+          </span>
+          <div class="filter-group">
+            <button class="filter-btn" data-tech="Todos">Todos</button>
+            <button class="filter-btn" data-tech="5G">5G</button>
+            <button class="filter-btn" data-tech="4G">4G</button>
+            <button class="filter-btn" data-tech="3G">3G</button>
+            <button class="filter-btn" data-tech="2G">2G</button>
+            <button class="filter-btn" data-tech="nova">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                />
+              </svg>
+              Novas
+            </button>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="filter-row">
+          <span class="filter-label">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"
+              />
+            </svg>
+            Operadora
+          </span>
+          <div class="filter-group" id="op-filter-group">
+            <button class="filter-btn" data-op="">Todos</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div id="map"></div>
+
+    <div id="legend">
+      <div class="legend-row">
+        <span class="legend-badge" style="color: #f04">5G</span> NR (5G)
+      </div>
+      <div class="legend-row">
+        <span class="legend-badge" style="color: #0c9">4G</span> LTE (4G)
+      </div>
+      <div class="legend-row">
+        <span class="legend-badge" style="color: #fa0">3G</span> WCDMA (3G)
+      </div>
+      <div class="legend-row">
+        <span class="legend-badge" style="color: #88f">2G</span> GSM (2G)
+      </div>
+      <div
+        class="legend-row"
+        style="margin-top: 2px; border-top: 1px solid #2a2a2a; padding-top: 5px"
+      >
+        <span class="legend-badge" style="color: #0c9; box-shadow: 0 0 6px #0c9"
+          >4G</span
+        >
+        licenciada no último ano
+      </div>
+    </div>
+
+    <script>
+      // ── Map logic ────────────────────────────────────────────────────────────────
+      const TECH_COLOR = {
+        "5G": "#f04",
+        "4G": "#0c9",
+        "3G": "#fa0",
+        "2G": "#88f",
+      };
+      const USER_FACING_TECH = new Set(Object.keys(TECH_COLOR));
+      const ICON_RSS = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>`;
+      const ICON_CHIP = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>`;
+      const ICON_CAL = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
+      const TECH_PRIORITY = ["5G", "4G", "3G", "2G"];
+
+      function bestTech(a, b) {
+        return TECH_PRIORITY.indexOf(a) <= TECH_PRIORITY.indexOf(b) ? a : b;
+      }
+      function colorFor(a) {
+        return TECH_COLOR[a.tecnologia] || "#888";
+      }
+      const TECH_ZINDEX = { "5G": 400, "4G": 300, "3G": 200, "2G": 100 };
+
+      function makeIcon(antenna) {
+        const color = colorFor(antenna);
+        const label =
+          antenna.tecnologia === "Desconhecida" ? "?" : antenna.tecnologia;
+        const w = label.length <= 2 ? 28 : label.length * 8 + 10;
+        return L.divIcon({
+          className: "",
+          html: `<div class="marker-icon${antenna.nova ? " nova" : ""}" style="color:${color};min-width:${w}px">${label}</div>`,
+          iconSize: [w, 20],
+          iconAnchor: [w / 2, 10],
+          popupAnchor: [0, -14],
+        });
+      }
+
+      const map = L.map("map").setView([-24.8, -53.5], 9);
+
+      if (!window.isSecureContext) {
+        console.warn(
+          "Geolocation unavailable: page must be served over HTTPS.",
+        );
+      } else if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => map.setView([pos.coords.latitude, pos.coords.longitude], 13),
+          (err) => console.warn("Geolocation failed:", err.message),
+          { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+        );
+      }
+
+      L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+        {
+          attribution:
+            '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+          subdomains: "abcd",
+          maxZoom: 19,
+        },
+      ).addTo(map);
+
+      let allMarkers = [];
+      let activeTech = localStorage.getItem("antennamap-tech") || "Todos";
+      let activeOp = localStorage.getItem("antennamap-op") || "";
+
+      function saveFilters() {
+        localStorage.setItem("antennamap-tech", activeTech);
+        localStorage.setItem("antennamap-op", activeOp);
+      }
+
+      const clusterGroup = L.markerClusterGroup({
+        disableClusteringAtZoom: 13,
+        maxClusterRadius: 50,
+        showCoverageOnHover: false,
+        iconCreateFunction(cluster) {
+          const counts = {};
+          for (const m of cluster.getAllChildMarkers()) {
+            const t = m._antenna.tecnologia;
+            counts[t] = (counts[t] || 0) + 1;
+          }
+          const parts = TECH_PRIORITY.filter((t) => counts[t]).map(
+            (t) =>
+              `<span style="color:${TECH_COLOR[t]}">${counts[t]}<small>${t}</small></span>`,
+          );
+          return L.divIcon({
+            className: "",
+            html: `<div class="cluster-icon">${parts.join("")}</div>`,
+            iconSize: null,
+          });
+        },
       });
-      marker._antenna = antenna;
-      marker.bindPopup(`
+      clusterGroup.addTo(map);
+
+      function applyFilters() {
+        clusterGroup.clearLayers();
+        for (const { marker, antenna } of allMarkers) {
+          const techOk =
+            activeTech === "Todos" ||
+            (activeTech === "nova"
+              ? antenna.nova
+              : antenna.tecnologia === activeTech);
+          const opOk = !activeOp || antenna.allOps.has(activeOp);
+          if (techOk && opOk) clusterGroup.addLayer(marker);
+        }
+      }
+
+      // Restore tech filter active state from localStorage
+      document.querySelectorAll(".filter-btn[data-tech]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.tech === activeTech);
+      });
+
+      // Tech filter buttons
+      document.querySelectorAll(".filter-btn[data-tech]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".filter-btn[data-tech]")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          activeTech = btn.dataset.tech;
+          saveFilters();
+          applyFilters();
+        });
+      });
+
+      // Operadora filter buttons (event delegation – buttons added dynamically)
+      document
+        .getElementById("op-filter-group")
+        .addEventListener("click", (e) => {
+          const btn = e.target.closest(".filter-btn[data-op]");
+          if (!btn) return;
+          document
+            .querySelectorAll("#op-filter-group .filter-btn")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          activeOp = btn.dataset.op;
+          saveFilters();
+          applyFilters();
+        });
+
+      fetch("../antennas.json")
+        .then((r) => r.json())
+        .then((data) => {
+          data = data.filter((a) => USER_FACING_TECH.has(a.tecnologia));
+
+          const siteMap = new Map();
+          for (const a of data) {
+            const key = `${a.lat.toFixed(3)},${a.lon.toFixed(3)}`;
+            if (!siteMap.has(key)) {
+              siteMap.set(key, {
+                lat: a.lat,
+                lon: a.lon,
+                tecnologia: a.tecnologia,
+                municipio: a.municipio,
+                nova: a.nova,
+                data: a.data,
+                allTechs: new Set([a.tecnologia]),
+                allOps: new Set([a.operadora]),
+              });
+            } else {
+              const s = siteMap.get(key);
+              s.tecnologia = bestTech(s.tecnologia, a.tecnologia);
+              s.allTechs.add(a.tecnologia);
+              s.allOps.add(a.operadora);
+              if (a.nova) {
+                s.nova = true;
+                s.data = a.data;
+              }
+            }
+          }
+
+          // Populate operadora filter buttons
+          const ops = [...new Set(data.map((a) => a.operadora))].sort();
+          const opGroup = document.getElementById("op-filter-group");
+          ops.forEach((op) => {
+            const btn = document.createElement("button");
+            btn.className = "filter-btn" + (op === activeOp ? " active" : "");
+            btn.dataset.op = op;
+            btn.textContent = op;
+            opGroup.appendChild(btn);
+          });
+          // If an op is active, deactivate the "Todos" button
+          if (activeOp) {
+            document
+              .querySelector('#op-filter-group .filter-btn[data-op=""]')
+              .classList.remove("active");
+          } else {
+            document
+              .querySelector('#op-filter-group .filter-btn[data-op=""]')
+              .classList.add("active");
+          }
+
+          for (const antenna of siteMap.values()) {
+            const techList = TECH_PRIORITY.filter((t) =>
+              antenna.allTechs.has(t),
+            ).join(" · ");
+            const opList = [...antenna.allOps].sort().join(", ");
+            const marker = L.marker([antenna.lat, antenna.lon], {
+              icon: makeIcon(antenna),
+              zIndexOffset: TECH_ZINDEX[antenna.tecnologia] || 0,
+            });
+            marker._antenna = antenna;
+            marker.bindPopup(`
         <div class="popup-row">${ICON_RSS}${opList}</div>
         <div class="popup-row">${ICON_CHIP}${techList} · ${antenna.municipio}</div>
         <div class="popup-row">${ICON_CAL}${antenna.data || "—"}${antenna.nova ? " &nbsp;<span style='color:#f73'>nova</span>" : ""}</div>
       `);
-      allMarkers.push({ marker, antenna });
-    }
-    applyFilters();
-  })
-  .catch(() => console.error("erro ao carregar antennas.json"));
-</script>
-</body>
+            allMarkers.push({ marker, antenna });
+          }
+          applyFilters();
+        })
+        .catch(() => console.error("erro ao carregar antennas.json"));
+    </script>
+  </body>
 </html>

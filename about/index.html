@@ -1,184 +1,307 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sobre – Conectividade Costa Oeste</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%230c9'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z'/%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="../shared.css" />
-  <style>
-    :root {
-      --surface: #141414;
-      --border:  #2a2a2a;
-      --text:    #e6edf3;
-      --muted:   #8b949e;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sobre – Conectividade Costa Oeste</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%230c9'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="../shared.css" />
+    <style>
+      :root {
+        --surface: #141414;
+        --border: #2a2a2a;
+        --text: #e6edf3;
+        --muted: #8b949e;
+      }
 
-    body {
-      color: var(--text);
-      min-height: 100dvh;
-    }
+      body {
+        color: var(--text);
+        min-height: 100dvh;
+      }
 
-    #about-content {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 3rem 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
+      #about-content {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
 
-    .about-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.25rem 1.5rem;
-    }
+      .about-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.25rem 1.5rem;
+      }
 
-    .about-card h2 {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      margin-bottom: .75rem;
-    }
+      .about-card h2 {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.75rem;
+      }
 
-    .about-card p {
-      color: var(--muted);
-      font-size: 0.85rem;
-      line-height: 1.7;
-      margin: 0;
-    }
+      .about-card p {
+        color: var(--muted);
+        font-size: 0.85rem;
+        line-height: 1.7;
+        margin: 0;
+      }
 
-    .about-card p + p {
-      margin-top: .35rem;
-    }
+      .about-card p + p {
+        margin-top: 0.35rem;
+      }
 
-    .about-card a { color: var(--accent); text-decoration: none; }
-    .about-card a:hover { text-decoration: underline; }
+      .about-card a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      .about-card a:hover {
+        text-decoration: underline;
+      }
 
-    .about-hero {
-      text-align: center;
-      padding: 2rem 1.5rem;
-    }
+      .about-hero {
+        text-align: center;
+        padding: 2rem 1.5rem;
+      }
 
-    .about-hero .icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: rgba(0,204,153,.1);
-      color: var(--accent);
-      margin-bottom: 1rem;
-    }
+      .about-hero .icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(0, 204, 153, 0.1);
+        color: var(--accent);
+        margin-bottom: 1rem;
+      }
 
-    .about-hero .icon svg { width: 24px; height: 24px; }
+      .about-hero .icon svg {
+        width: 24px;
+        height: 24px;
+      }
 
-    .about-hero h2 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text);
-      text-transform: none;
-      letter-spacing: 0;
-      margin-bottom: .5rem;
-    }
+      .about-hero h2 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text);
+        text-transform: none;
+        letter-spacing: 0;
+        margin-bottom: 0.5rem;
+      }
 
-    .source-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: .5rem 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.85rem;
-    }
+      .source-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.85rem;
+      }
 
-    .source-row:last-child { border-bottom: none; }
+      .source-row:last-child {
+        border-bottom: none;
+      }
 
-    .source-row .source-name { color: var(--text); font-weight: 500; }
-    .source-row .source-desc { color: var(--muted); font-size: 0.78rem; }
+      .source-row .source-name {
+        color: var(--text);
+        font-weight: 500;
+      }
+      .source-row .source-desc {
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
 
-    .github-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: border-color .15s, background .15s;
-    }
-    .github-btn:hover { border-color: #555; background: #1c2128; text-decoration: none; }
-    .github-btn svg { width: 18px; height: 18px; fill: currentColor; }
-  </style>
-</head>
-<body>
+      .github-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+      .github-btn:hover {
+        border-color: #555;
+        background: #1c2128;
+        text-decoration: none;
+      }
+      .github-btn svg {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-top">
+        <h1>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"
+            />
+          </svg>
+          Conectividade Costa Oeste Paraná
+        </h1>
+        <nav class="header-nav">
+          <a class="tab" href="../map/">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+              />
+            </svg>
+            Mapa
+          </a>
+          <a class="tab" href="../stats/">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+            >
+              <path d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path
+                d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"
+              />
+            </svg>
+            Estatísticas
+          </a>
+          <a class="tab active" href="../about/">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+              />
+            </svg>
+            Sobre
+          </a>
+        </nav>
+      </div>
+    </header>
 
-<header>
-  <div class="header-top">
-    <h1>
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
-      Conectividade Costa Oeste Paraná
-    </h1>
-    <nav class="header-nav">
-      <a class="tab" href="../map/">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-        Mapa
-      </a>
-      <a class="tab" href="../stats/">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
-        Estatísticas
-      </a>
-      <a class="tab active" href="../about/">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-        Sobre
-      </a>
-    </nav>
-  </div>
-</header>
+    <div id="about-content">
+      <div class="about-card about-hero">
+        <div class="icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"
+            />
+          </svg>
+        </div>
+        <h2>Conectividade Costa Oeste Paraná</h2>
+        <p>
+          Mapa e estatísticas de torres de telecomunicação da região Costa Oeste
+          do Paraná.
+        </p>
+        <p>
+          Criado por
+          <a href="https://caarlos0.dev" target="_blank" rel="noopener"
+            >Carlos A Becker</a
+          >
+          usando
+          <a
+            href="https://github.com/features/copilot"
+            target="_blank"
+            rel="noopener"
+            >GitHub Copilot</a
+          >.
+        </p>
+      </div>
 
-<div id="about-content">
-  <div class="about-card about-hero">
-    <div class="icon">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+      <div class="about-card">
+        <h2>Fontes</h2>
+        <div class="source-row">
+          <span>
+            <span class="source-name">ANATEL</span>
+            <span class="source-desc"> — Dados de antenas</span>
+          </span>
+          <a
+            href="https://sistemas.anatel.gov.br"
+            target="_blank"
+            rel="noopener"
+            >sistemas.anatel.gov.br</a
+          >
+        </div>
+        <div class="source-row">
+          <span>
+            <span class="source-name">IBGE</span>
+            <span class="source-desc"> — Dados de população</span>
+          </span>
+          <a href="https://www.ibge.gov.br" target="_blank" rel="noopener"
+            >ibge.gov.br</a
+          >
+        </div>
+      </div>
+
+      <div class="about-card" style="text-align: center">
+        <h2>Código-fonte</h2>
+        <a
+          class="github-btn"
+          href="https://github.com/caarlos0/antennamap"
+          target="_blank"
+          rel="noopener"
+        >
+          <svg viewBox="0 0 16 16">
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+            />
+          </svg>
+          Ver no GitHub
+        </a>
+      </div>
     </div>
-    <h2>Conectividade Costa Oeste Paraná</h2>
-    <p>Mapa e estatísticas de torres de telecomunicação da região Costa Oeste do Paraná.</p>
-    <p>Criado por <a href="https://caarlos0.dev" target="_blank" rel="noopener">Carlos A Becker</a> usando <a href="https://github.com/features/copilot" target="_blank" rel="noopener">GitHub Copilot</a>.</p>
-  </div>
-
-  <div class="about-card">
-    <h2>Fontes</h2>
-    <div class="source-row">
-      <span>
-        <span class="source-name">ANATEL</span>
-        <span class="source-desc"> — Dados de antenas</span>
-      </span>
-      <a href="https://sistemas.anatel.gov.br" target="_blank" rel="noopener">sistemas.anatel.gov.br</a>
-    </div>
-    <div class="source-row">
-      <span>
-        <span class="source-name">IBGE</span>
-        <span class="source-desc"> — Dados de população</span>
-      </span>
-      <a href="https://www.ibge.gov.br" target="_blank" rel="noopener">ibge.gov.br</a>
-    </div>
-  </div>
-
-  <div class="about-card" style="text-align:center">
-    <h2>Código-fonte</h2>
-    <a class="github-btn" href="https://github.com/caarlos0/antennamap" target="_blank" rel="noopener">
-      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      Ver no GitHub
-    </a>
-  </div>
-</div>
-
-</body>
+  </body>
 </html>
