@@ -308,7 +308,10 @@
         });
       }
 
-      const map = L.map("map").setView([-24.8, -53.5], 9);
+      const REGION_CENTER = [-24.8, -53.5];
+      const MAX_DISTANCE_KM = 100;
+
+      const map = L.map("map").setView(REGION_CENTER, 9);
 
       if (!window.isSecureContext) {
         console.warn(
@@ -316,7 +319,15 @@
         );
       } else if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          (pos) => map.setView([pos.coords.latitude, pos.coords.longitude], 13),
+          (pos) => {
+            const d = map.distance(REGION_CENTER, [
+              pos.coords.latitude,
+              pos.coords.longitude,
+            ]);
+            if (d / 1000 <= MAX_DISTANCE_KM) {
+              map.setView([pos.coords.latitude, pos.coords.longitude], 13);
+            }
+          },
           (err) => console.warn("Geolocation failed:", err.message),
           { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
         );
