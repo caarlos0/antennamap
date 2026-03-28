@@ -6,13 +6,11 @@
   <title>Estatísticas – Conectividade Costa Oeste</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%230c9'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z'/%3E%3C/svg%3E" />
 
+  <link rel="stylesheet" href="../shared.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg:       #1a1a1a;
       --surface:  #141414;
       --border:   #2a2a2a;
       --text:     #e6edf3;
@@ -25,137 +23,9 @@
     }
 
     body {
-      font-family: system-ui, sans-serif;
-      background: var(--bg);
       color: var(--text);
       min-height: 100dvh;
     }
-
-    /* ── Shared header styles ─────────────────────────────── */
-    header {
-      background: #1a1a1a;
-      border-bottom: 1px solid #2a2a2a;
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-    }
-
-    .header-top {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 6px 14px 4px;
-      flex-wrap: wrap;
-    }
-
-    .header-nav {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .tab {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 10px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #555;
-      text-decoration: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      background: none;
-      cursor: pointer;
-      transition: color .15s, border-color .15s;
-      white-space: nowrap;
-      font-family: inherit;
-    }
-    .tab svg { width: 13px; height: 13px; flex-shrink: 0; }
-    .tab:hover { color: #ccc; }
-    .tab.active { color: #0c9; border-bottom-color: #0c9; }
-
-    header h1 {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #fff;
-      white-space: nowrap;
-      letter-spacing: 0.02em;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-right: 6px;
-    }
-    header h1 svg { width: 16px; height: 16px; flex-shrink: 0; }
-
-    .sep {
-      width: 1px;
-      height: 20px;
-      background: #333;
-      flex-shrink: 0;
-    }
-
-    .header-filters {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      padding: 4px 14px 6px;
-      border-top: 1px solid #222;
-    }
-
-    @media (max-width: 599px) {
-      .sep { display: none; }
-      .filter-label { display: none; }
-    }
-
-    .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .filter-label {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.7rem;
-      color: #555;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      white-space: nowrap;
-    }
-    .filter-label svg { width: 13px; height: 13px; }
-
-    .filter-btn {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 10px;
-      border-radius: 4px;
-      border: 1px solid #333;
-      cursor: pointer;
-      font-size: 0.75rem;
-      font-weight: 600;
-      background: #222;
-      color: #aaa;
-      transition: all 0.15s;
-      font-family: inherit;
-    }
-    .filter-btn svg { width: 12px; height: 12px; }
-    .filter-btn:hover { border-color: #555; color: #fff; }
-    .filter-btn[data-tech="Todos"] { --c: #888; }
-    .filter-btn[data-tech="5G"]    { --c: #f04; }
-    .filter-btn[data-tech="4G"]    { --c: #0c9; }
-    .filter-btn[data-tech="3G"]    { --c: #fa0; }
-    .filter-btn[data-tech="2G"]    { --c: #88f; }
-    .filter-btn[data-tech="nova"]  { --c: #f73; }
-    .filter-btn[data-op=""]      { --c: #888; }
-    .filter-btn[data-op="Claro"] { --c: #e05c2a; }
-    .filter-btn[data-op="TIM"]   { --c: #0050a0; }
-    .filter-btn[data-op="Vivo"]  { --c: #660099; }
-    .filter-btn.active { color: var(--c); border-color: var(--c); background: #111; }
 
     /* ── Stats-specific styles ────────────────────────────── */
     main {
@@ -377,15 +247,15 @@
       Conectividade Costa Oeste Paraná
     </h1>
     <nav class="header-nav">
-      <button class="tab" onclick="location.href='../'">
+      <a class="tab" href="../map/">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
         Mapa
-      </button>
-      <a href="../stats/" class="tab active">
+      </a>
+      <a class="tab active" href="../stats/">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/></svg>
         Estatísticas
       </a>
-      <a href="../about/" class="tab">
+      <a class="tab" href="../about/">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
         Sobre
       </a>
@@ -418,30 +288,7 @@
   </div>
 </header>
 
-<script>
-// Wire standalone header filter buttons to statsApplyFilter once it is available.
-// This script is outside #stats-content so it only runs in standalone mode.
-document.getElementById('tech-filter-group').addEventListener('click', e => {
-  const btn = e.target.closest('.filter-btn[data-tech]');
-  if (!btn) return;
-  document.querySelectorAll('#tech-filter-group .filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const op = document.querySelector('#op-filter-group .filter-btn.active')?.dataset.op ?? '';
-  if (typeof window.statsApplyFilter === 'function') window.statsApplyFilter(btn.dataset.tech, op);
-});
-document.getElementById('op-filter-group').addEventListener('click', e => {
-  const btn = e.target.closest('.filter-btn[data-op]');
-  if (!btn) return;
-  document.querySelectorAll('#op-filter-group .filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const tech = document.querySelector('#tech-filter-group .filter-btn.active')?.dataset.tech ?? 'Todos';
-  if (typeof window.statsApplyFilter === 'function') window.statsApplyFilter(tech, btn.dataset.op);
-});
-</script>
 
-<div id="stats-content">
-
-<main>
   <div class="cards" id="summary-cards"></div>
 
   <section>
@@ -490,7 +337,6 @@ document.getElementById('op-filter-group').addEventListener('click', e => {
 </footer>
 
 <script>
-(function() {
 const ICON_RSS        = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>`;
 const ICON_TROPHY     = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 4h2a2 2 0 012 2v1c0 2.97-2.143 5.449-5 5.91V15h2a1 1 0 010 2H7a1 1 0 010-2h2v-2.09C6.143 12.449 4 9.97 4 7V6a2 2 0 012-2h2m8 0V3a1 1 0 00-1-1H9a1 1 0 00-1 1v1m8 0H8"/></svg>`;
 const ICON_TREND_DOWN = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>`;
@@ -516,15 +362,19 @@ function stackBar(counts, palette, total) {
 }
 
 // ── state ─────────────────────────────────────────────────────────────────────
-let activeTech = 'Todos';
-let activeOp   = '';
+let activeTech = localStorage.getItem('antennamap-tech') || 'Todos';
+let activeOp   = localStorage.getItem('antennamap-op') || '';
 let allRows    = [];
 let popData;
 let chartPerCapita, chartTech;
 let sortCol = 'per10k', sortDir = -1;
 
-// When running standalone: data files are at ../; when embedded in shell: at ./
-const dataBase = (location.pathname + '/').includes('/stats/') ? '../' : '';
+const dataBase = '../';
+
+function saveFilters() {
+  localStorage.setItem('antennamap-tech', activeTech);
+  localStorage.setItem('antennamap-op', activeOp);
+}
 
 // ── Chart.js loader (needed when loaded via htmx into a shell without Chart.js) ──
 function ensureChartJs() {
@@ -586,12 +436,43 @@ async function load() {
   if (opGroup && opGroup.querySelectorAll('[data-op]:not([data-op=""])').length === 0) {
     ops.forEach(op => {
       const btn = document.createElement('button');
-      btn.className = 'filter-btn';
+      btn.className = 'filter-btn' + (op === activeOp ? ' active' : '');
       btn.dataset.op = op;
       btn.textContent = op;
       opGroup.appendChild(btn);
     });
+    if (activeOp) {
+      document.querySelector('#op-filter-group .filter-btn[data-op=""]').classList.remove('active');
+    } else {
+      document.querySelector('#op-filter-group .filter-btn[data-op=""]').classList.add('active');
+    }
   }
+
+  // Restore tech filter active state from localStorage
+  document.querySelectorAll('#tech-filter-group .filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tech === activeTech);
+  });
+
+  // Wire filter buttons
+  document.getElementById('tech-filter-group').addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn[data-tech]');
+    if (!btn) return;
+    document.querySelectorAll('#tech-filter-group .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTech = btn.dataset.tech;
+    saveFilters();
+    applyFilter(activeTech, activeOp);
+  });
+
+  document.getElementById('op-filter-group').addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn[data-op]');
+    if (!btn) return;
+    document.querySelectorAll('#op-filter-group .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeOp = btn.dataset.op;
+    saveFilters();
+    applyFilter(activeTech, activeOp);
+  });
 
   // Destroy any existing Chart.js instances before re-creating
   const ec1 = Chart.getChart('chart-per-capita');
@@ -601,20 +482,8 @@ async function load() {
 
   initCharts();
 
-  // Expose filter function for shell to call
-  window.statsApplyFilter = function(tech, op) {
-    document.querySelectorAll('#tech-filter-group .filter-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.tech === tech);
-    });
-    document.querySelectorAll('#op-filter-group .filter-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.op === (op || ''));
-    });
-    applyFilter(tech, op || '');
-  };
-
-  // Initial render: honour shell filter state if available, else defaults
-  const fs = window._filterState;
-  applyFilter(fs ? fs.tech : 'Todos', fs ? fs.op : '');
+  // Initial render using localStorage filter state
+  applyFilter(activeTech, activeOp);
 }
 
 // ── derive rows for the active filter ─────────────────────────────────────────
@@ -789,9 +658,7 @@ load().catch(err => {
   document.querySelector('main').innerHTML =
     `<p style="color:#f85149;padding:2rem">Erro ao carregar dados: ${err.message}</p>`;
 });
-})(); // end IIFE
 </script>
 
-</div><!-- #stats-content -->
 </body>
 </html>
