@@ -1,0 +1,7 @@
+[project]
+name = "antennamap"
+version = "0.1.0"
+description = "ANATEL antenna map for Costa Oeste Paraná"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
