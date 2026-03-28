@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="../shared.css" />
   <style>
     :root {
-      --surface: #161b22;
-      --border:  #30363d;
+      --surface: #141414;
+      --border:  #2a2a2a;
       --text:    #e6edf3;
       --muted:   #8b949e;
     }
@@ -21,18 +21,101 @@
 
     #about-content {
       max-width: 640px;
-      margin: 4rem auto;
-      padding: 2rem;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
     }
 
-    #about-content p {
+    .about-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .about-card h2 {
+      font-size: 0.7rem;
+      font-weight: 600;
       color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: .75rem;
+    }
+
+    .about-card p {
+      color: var(--muted);
+      font-size: 0.85rem;
       line-height: 1.7;
+      margin: 0;
+    }
+
+    .about-card p + p {
+      margin-top: .35rem;
+    }
+
+    .about-card a { color: var(--accent); text-decoration: none; }
+    .about-card a:hover { text-decoration: underline; }
+
+    .about-hero {
+      text-align: center;
+      padding: 2rem 1.5rem;
+    }
+
+    .about-hero .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(0,204,153,.1);
+      color: var(--accent);
       margin-bottom: 1rem;
     }
 
-    #about-content a { color: var(--accent); text-decoration: none; }
-    #about-content a:hover { text-decoration: underline; }
+    .about-hero .icon svg { width: 24px; height: 24px; }
+
+    .about-hero h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: 0;
+      margin-bottom: .5rem;
+    }
+
+    .source-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .source-row:last-child { border-bottom: none; }
+
+    .source-row .source-name { color: var(--text); font-weight: 500; }
+    .source-row .source-desc { color: var(--muted); font-size: 0.78rem; }
+
+    .github-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: border-color .15s, background .15s;
+    }
+    .github-btn:hover { border-color: #555; background: #1c2128; text-decoration: none; }
+    .github-btn svg { width: 18px; height: 18px; fill: currentColor; }
   </style>
 </head>
 <body>
@@ -61,10 +144,40 @@
 </header>
 
 <div id="about-content">
-  <p>Criado por <a href="https://caarlos0.dev" target="_blank" rel="noopener">Carlos A Becker</a> usando <a href="https://github.com/features/copilot" target="_blank" rel="noopener">GitHub Copilot</a>.</p>
-  <p>Dados de antenas: <a href="https://sistemas.anatel.gov.br" target="_blank" rel="noopener">ANATEL</a></p>
-  <p>Dados de população: <a href="https://www.ibge.gov.br" target="_blank" rel="noopener">IBGE</a></p>
-  <p><a href="https://github.com/caarlos0/antennamap" target="_blank" rel="noopener">Código-fonte no GitHub</a>.</p>
+  <div class="about-card about-hero">
+    <div class="icon">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+    </div>
+    <h2>Conectividade Costa Oeste Paraná</h2>
+    <p>Mapa e estatísticas de torres de telecomunicação da região Costa Oeste do Paraná.</p>
+    <p>Criado por <a href="https://caarlos0.dev" target="_blank" rel="noopener">Carlos A Becker</a> usando <a href="https://github.com/features/copilot" target="_blank" rel="noopener">GitHub Copilot</a>.</p>
+  </div>
+
+  <div class="about-card">
+    <h2>Fontes</h2>
+    <div class="source-row">
+      <span>
+        <span class="source-name">ANATEL</span>
+        <span class="source-desc"> — Dados de antenas</span>
+      </span>
+      <a href="https://sistemas.anatel.gov.br" target="_blank" rel="noopener">sistemas.anatel.gov.br</a>
+    </div>
+    <div class="source-row">
+      <span>
+        <span class="source-name">IBGE</span>
+        <span class="source-desc"> — Dados de população</span>
+      </span>
+      <a href="https://www.ibge.gov.br" target="_blank" rel="noopener">ibge.gov.br</a>
+    </div>
+  </div>
+
+  <div class="about-card" style="text-align:center">
+    <h2>Código-fonte</h2>
+    <a class="github-btn" href="https://github.com/caarlos0/antennamap" target="_blank" rel="noopener">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      Ver no GitHub
+    </a>
+  </div>
 </div>
 
 </body>

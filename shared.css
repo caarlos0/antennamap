@@ -81,6 +81,12 @@ header h1 svg { width: 16px; height: 16px; flex-shrink: 0; }
   border-top: 1px solid #222;
 }
 
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .sep { width: 1px; height: 20px; background: #333; flex-shrink: 0; }
 
 .filter-label {
@@ -130,6 +136,7 @@ header h1 svg { width: 16px; height: 16px; flex-shrink: 0; }
 .filter-btn.active { color: var(--c); border-color: var(--c); background: #111; }
 
 @media (max-width: 599px) {
+  .header-filters { flex-direction: column; align-items: flex-start; gap: 6px; }
   .sep { display: none; }
   .filter-label { display: none; }
 }
