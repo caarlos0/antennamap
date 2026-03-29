@@ -672,7 +672,8 @@
             .split(",")
             .forEach((s) => {
               const [name, uf] = s.split("|");
-              if (name && uf) selection.cities.push({ name, uf });
+              if (name && uf && selection.cities.length < MAX_CITIES)
+                selection.cities.push({ name, uf });
             });
         } else if (p.has("states")) {
           p.get("states")
@@ -739,11 +740,14 @@
             : "Buscar estado ou cidade...";
         };
 
+        const MAX_CITIES = 10;
+
         function addItem(type, data) {
           if (type === "state") {
             selection.cities.length = 0;
             selection.states.add(data.uf);
           } else {
+            if (selection.cities.length >= MAX_CITIES) return;
             selection.states.clear();
             selection.cities.push({ name: data.name, uf: data.uf });
           }
