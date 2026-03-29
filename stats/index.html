@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Estatísticas – Conectividade Costa Oeste</title>
+    <title>Estatísticas – AntennaMap Brasil</title>
     <link
       rel="icon"
       type="image/svg+xml"
@@ -268,6 +268,50 @@
         color: var(--muted);
         border-top: 1px solid var(--border);
       }
+
+      #uf-select {
+        padding: 3px 8px;
+        border-radius: 4px;
+        border: 1px solid #333;
+        background: #222;
+        color: #aaa;
+        font-size: 0.75rem;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+      }
+      #uf-select:hover {
+        border-color: #555;
+        color: #fff;
+      }
+      #uf-select:focus {
+        outline: none;
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .stats-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 3rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .stats-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #333;
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
     </style>
   </head>
   <body>
@@ -287,7 +331,7 @@
               d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"
             />
           </svg>
-          Conectividade Costa Oeste Paraná
+          Conectividade Brasil
         </h1>
         <nav class="header-nav">
           <a class="tab" href="../map/">
@@ -357,6 +401,28 @@
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
+                d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Estado
+          </span>
+          <select id="uf-select">
+            <option value="">Brasil (Nacional)</option>
+          </select>
+        </div>
+        <div class="sep"></div>
+        <div class="filter-row">
+          <span class="filter-label">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
                 d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
               />
             </svg>
@@ -396,63 +462,10 @@
     </header>
 
     <main>
-      <div class="cards" id="summary-cards"></div>
-
-      <section>
-        <h2 id="section-heading">Torres por habitante</h2>
-        <div class="charts">
-          <div class="chart-box">
-            <h3 id="chart-per-capita-title">
-              Torres por 10 mil hab. — por município
-            </h3>
-            <canvas id="chart-per-capita" height="320"></canvas>
-          </div>
-          <div class="chart-box">
-            <h3>Distribuição de tecnologia por município</h3>
-            <canvas id="chart-tech" height="320"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2>Destaques</h2>
-        <div class="ranking" id="ranking"></div>
-      </section>
-
-      <section>
-        <h2>Tabela completa</h2>
-        <div class="table-wrap">
-          <table id="main-table">
-            <thead>
-              <tr>
-                <th data-col="city" data-type="str">
-                  Município <span class="sort-icon">↕</span>
-                </th>
-                <th data-col="pop" data-type="num" class="num">
-                  População <span class="sort-icon">↕</span>
-                </th>
-                <th data-col="total" data-type="num" class="num">
-                  <span id="th-towers">Torres</span>
-                  <span class="sort-icon">↕</span>
-                </th>
-                <th data-col="per10k" data-type="num" class="num sorted">
-                  / 10 mil hab. <span class="sort-icon">↓</span>
-                </th>
-                <th data-col="newPct" data-type="num" class="num">
-                  Novas (%) <span class="sort-icon">↕</span>
-                </th>
-                <th>Operadoras</th>
-                <th>Tecnologias</th>
-              </tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <footer>
-        <p>* Pop. &lt; 5 mil — per capita pode ser pouco representativo</p>
-      </footer>
+      <div class="stats-loading">
+        <div class="stats-spinner"></div>
+        Carregando…
+      </div>
     </main>
 
     <script>
@@ -471,6 +484,64 @@
       };
       const OP_COLOR = { Claro: "#e05c2a", TIM: "#0050a0", Vivo: "#660099" };
       const ALL_TECHS = ["5G", "4G", "3G", "2G"];
+      const ALL_UFS = [
+        "AC",
+        "AL",
+        "AM",
+        "AP",
+        "BA",
+        "CE",
+        "DF",
+        "ES",
+        "GO",
+        "MA",
+        "MG",
+        "MS",
+        "MT",
+        "PA",
+        "PB",
+        "PE",
+        "PI",
+        "PR",
+        "RJ",
+        "RN",
+        "RO",
+        "RR",
+        "RS",
+        "SC",
+        "SE",
+        "SP",
+        "TO",
+      ];
+      const UF_NAMES = {
+        AC: "Acre",
+        AL: "Alagoas",
+        AM: "Amazonas",
+        AP: "Amapá",
+        BA: "Bahia",
+        CE: "Ceará",
+        DF: "Distrito Federal",
+        ES: "Espírito Santo",
+        GO: "Goiás",
+        MA: "Maranhão",
+        MG: "Minas Gerais",
+        MS: "Mato Grosso do Sul",
+        MT: "Mato Grosso",
+        PA: "Pará",
+        PB: "Paraíba",
+        PE: "Pernambuco",
+        PI: "Piauí",
+        PR: "Paraná",
+        RJ: "Rio de Janeiro",
+        RN: "Rio Grande do Norte",
+        RO: "Rondônia",
+        RR: "Roraima",
+        RS: "Rio Grande do Sul",
+        SC: "Santa Catarina",
+        SE: "Sergipe",
+        SP: "São Paulo",
+        TO: "Tocantins",
+      };
 
       const fmt = (n) => n.toLocaleString("pt-BR");
       const fmtF = (n, d = 1) =>
@@ -495,34 +566,359 @@
         );
       }
 
-      // ── state ─────────────────────────────────────────────────────────────────────
+      // ── state ─────────────────────────────────────────────────────────────────
       let activeTech = localStorage.getItem("antennamap-tech") || "Todos";
       if (activeTech === "nova") activeTech = "Todos";
       let activeOp = localStorage.getItem("antennamap-op") || "";
+      let activeUf = new URLSearchParams(location.search).get("uf") || "";
       let allRows = [];
-      let popData;
       let chartPerCapita, chartTech;
       let sortCol = "per10k",
         sortDir = -1;
-
-      const dataBase = "../";
+      let municipalitiesIndex = null;
+      const stateDataCache = {};
 
       function saveFilters() {
         localStorage.setItem("antennamap-tech", activeTech);
         localStorage.setItem("antennamap-op", activeOp);
       }
 
-      // ── data loading ──────────────────────────────────────────────────────────────
-      async function load() {
-        const [antData, pd] = await Promise.all([
-          fetch(dataBase + "antennas.json").then((r) => r.json()),
-          fetch(dataBase + "population.json").then((r) => r.json()),
-        ]);
-        popData = pd;
-        // Build siteMaps: city -> Map<key, {techs: Set, ops: Set, isNew: bool}>
+      // ── UF selector ───────────────────────────────────────────────────────────
+      const ufSelect = document.getElementById("uf-select");
+      ALL_UFS.forEach((uf) => {
+        const opt = document.createElement("option");
+        opt.value = uf;
+        opt.textContent = `${uf} – ${UF_NAMES[uf]}`;
+        ufSelect.appendChild(opt);
+      });
+      if (activeUf) ufSelect.value = activeUf;
+
+      ufSelect.addEventListener("change", async () => {
+        activeUf = ufSelect.value;
+        const url = new URL(location);
+        if (activeUf) url.searchParams.set("uf", activeUf);
+        else url.searchParams.delete("uf");
+        history.replaceState(null, "", url);
+        await loadScope();
+      });
+
+      // ── data loading ──────────────────────────────────────────────────────────
+      async function loadMunicipalities() {
+        if (municipalitiesIndex) return;
+        municipalitiesIndex = await fetch("../data/municipalities.json").then(
+          (r) => r.json(),
+        );
+      }
+
+      async function loadStateAntennas(uf) {
+        if (stateDataCache[uf]) return stateDataCache[uf];
+        const data = await fetch(`../data/antennas/${uf}.json`).then((r) =>
+          r.json(),
+        );
+        stateDataCache[uf] = data;
+        return data;
+      }
+
+      async function loadScope() {
+        const main = document.querySelector("main");
+        const oldContent = main.innerHTML;
+        main.innerHTML =
+          '<div class="stats-loading"><div class="stats-spinner"></div>Carregando…</div>';
+
+        try {
+          await loadMunicipalities();
+
+          if (!activeUf) {
+            await renderNationalView();
+          } else {
+            const antData = await loadStateAntennas(activeUf);
+            renderStateView(activeUf, antData);
+          }
+        } catch (err) {
+          main.innerHTML = `<p style="color:#f85149;padding:2rem">Erro ao carregar dados: ${err.message}</p>`;
+        }
+      }
+
+      // ── national view (from municipalities.json only) ─────────────────────────
+      async function renderNationalView() {
+        // Build per-state aggregates from municipalities index
+        const stateAgg = {};
+        for (const [, m] of Object.entries(municipalitiesIndex)) {
+          const uf = m.uf;
+          if (!stateAgg[uf])
+            stateAgg[uf] = { pop: 0, antenas: 0, municipalities: 0 };
+          stateAgg[uf].pop += m.populacao || 0;
+          stateAgg[uf].antenas += m.antenas || 0;
+          stateAgg[uf].municipalities++;
+        }
+
+        const totalPop = Object.values(stateAgg).reduce((s, a) => s + a.pop, 0);
+        const totalAnt = Object.values(stateAgg).reduce(
+          (s, a) => s + a.antenas,
+          0,
+        );
+        const totalMun = Object.values(stateAgg).reduce(
+          (s, a) => s + a.municipalities,
+          0,
+        );
+        const globalPer = +((totalAnt / totalPop) * 10000).toFixed(2);
+
+        allRows = ALL_UFS.filter((uf) => stateAgg[uf]).map((uf) => {
+          const a = stateAgg[uf];
+          return {
+            city: UF_NAMES[uf],
+            uf: uf,
+            pop: a.pop,
+            total: a.antenas,
+            per10k: a.pop ? +((a.antenas / a.pop) * 10000).toFixed(1) : 0,
+            municipalities: a.municipalities,
+            techs: {},
+            ops: {},
+            has5g: false,
+            new: 0,
+            newPct: 0,
+          };
+        });
+
+        // Hide tech/op filters for national view
+        document
+          .querySelector(".header-filters")
+          .querySelectorAll(".sep")
+          .forEach((s) => (s.style.display = ""));
+        document
+          .getElementById("tech-filter-group")
+          ?.closest(".filter-row")
+          ?.style.setProperty("display", "none");
+        document
+          .getElementById("op-filter-group")
+          ?.closest(".filter-row")
+          ?.style.setProperty("display", "none");
+
+        document.querySelector("main").innerHTML = `
+          <div class="cards" id="summary-cards"></div>
+          <section>
+            <h2>Antenas por estado</h2>
+            <div class="charts">
+              <div class="chart-box">
+                <h3>Torres por 10 mil hab. — por estado</h3>
+                <canvas id="chart-per-capita" height="500"></canvas>
+              </div>
+              <div class="chart-box">
+                <h3>Total de antenas por estado</h3>
+                <canvas id="chart-total" height="500"></canvas>
+              </div>
+            </div>
+          </section>
+          <section>
+            <h2>Destaques</h2>
+            <div class="ranking" id="ranking"></div>
+          </section>
+          <section>
+            <h2>Tabela por estado</h2>
+            <div class="table-wrap">
+              <table id="main-table">
+                <thead>
+                  <tr>
+                    <th data-col="city" data-type="str">Estado <span class="sort-icon">↕</span></th>
+                    <th data-col="pop" data-type="num" class="num">População <span class="sort-icon">↕</span></th>
+                    <th data-col="total" data-type="num" class="num">Torres <span class="sort-icon">↕</span></th>
+                    <th data-col="per10k" data-type="num" class="num sorted">/ 10 mil hab. <span class="sort-icon">↓</span></th>
+                    <th data-col="municipalities" data-type="num" class="num">Municípios <span class="sort-icon">↕</span></th>
+                  </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+              </table>
+            </div>
+          </section>
+          <footer><p>Selecione um estado para ver estatísticas detalhadas por município.</p></footer>
+        `;
+
+        document.getElementById("summary-cards").innerHTML = [
+          { label: "Estados", value: ALL_UFS.length, sub: "" },
+          {
+            label: "Municípios",
+            value: fmt(totalMun),
+            sub: "",
+          },
+          {
+            label: "Torres",
+            value: fmt(totalAnt),
+            sub: "",
+          },
+          {
+            label: "População total",
+            value: fmt(totalPop),
+            sub: "",
+          },
+          {
+            label: "Torres / 10 mil hab.",
+            value: fmtF(globalPer),
+            sub: "Nacional",
+          },
+        ]
+          .map(
+            (c) => `<div class="card">
+            <div class="label">${c.label}</div>
+            <div class="value">${c.value}</div>
+            ${c.sub ? `<div class="sub">${c.sub}</div>` : ""}
+          </div>`,
+          )
+          .join("");
+
+        // Charts
+        const ordered = [...allRows].sort((a, b) => b.per10k - a.per10k);
+        new Chart(document.getElementById("chart-per-capita"), {
+          type: "bar",
+          data: {
+            labels: ordered.map((r) => r.uf),
+            datasets: [
+              {
+                label: "Torres / 10 mil hab.",
+                data: ordered.map((r) => r.per10k),
+                backgroundColor: "rgba(0,204,153,.7)",
+                borderRadius: 3,
+              },
+            ],
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: {
+                grid: { color: "rgba(255,255,255,.05)" },
+                ticks: { color: "#8b949e" },
+              },
+              y: {
+                grid: { display: false },
+                ticks: { color: "#e6edf3", font: { size: 11 } },
+              },
+            },
+          },
+        });
+
+        const byTotal = [...allRows].sort((a, b) => b.total - a.total);
+        new Chart(document.getElementById("chart-total"), {
+          type: "bar",
+          data: {
+            labels: byTotal.map((r) => r.uf),
+            datasets: [
+              {
+                label: "Total de antenas",
+                data: byTotal.map((r) => r.total),
+                backgroundColor: "rgba(59,130,246,.6)",
+                borderRadius: 3,
+              },
+            ],
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: {
+                grid: { color: "rgba(255,255,255,.05)" },
+                ticks: { color: "#8b949e" },
+              },
+              y: {
+                grid: { display: false },
+                ticks: { color: "#e6edf3", font: { size: 11 } },
+              },
+            },
+          },
+        });
+
+        // Rankings
+        function rankBox(title, items, valFn) {
+          return `<div class="rank-box"><h3>${title}</h3>${items
+            .map(
+              (r) =>
+                `<div class="rank-item"><span>${r.city} (${r.uf})</span><span class="rank-val">${valFn(r)}</span></div>`,
+            )
+            .join("")}</div>`;
+        }
+
+        document.getElementById("ranking").innerHTML = [
+          rankBox(
+            `${ICON_TROPHY} Mais torres / 10 mil hab.`,
+            ordered.slice(0, 5),
+            (r) => fmtF(r.per10k),
+          ),
+          rankBox(
+            `${ICON_TREND_DOWN} Menos torres / 10 mil hab.`,
+            ordered.slice(-5).reverse(),
+            (r) => fmtF(r.per10k),
+          ),
+          rankBox(
+            `${ICON_SIGNAL} Mais torres (total)`,
+            byTotal.slice(0, 5),
+            (r) => fmt(r.total),
+          ),
+          rankBox(
+            `${ICON_SPARK} Mais municípios`,
+            [...allRows]
+              .sort((a, b) => b.municipalities - a.municipalities)
+              .slice(0, 5),
+            (r) => fmt(r.municipalities),
+          ),
+        ].join("");
+
+        // Table
+        const maxPer10k = Math.max(...allRows.map((r) => r.per10k), 1);
+        renderNationalTable(sortedRows(allRows), maxPer10k);
+        wireTableSort(() => {
+          renderNationalTable(
+            sortedRows(allRows),
+            Math.max(...allRows.map((r) => r.per10k), 1),
+          );
+        });
+      }
+
+      function renderNationalTable(data, maxPer10k) {
+        document.getElementById("table-body").innerHTML = data
+          .map(
+            (r) => `
+          <tr style="cursor:pointer" data-uf="${r.uf}">
+            <td class="city-name">${r.city} <span style="color:var(--muted)">(${r.uf})</span></td>
+            <td class="num">${fmt(r.pop)}</td>
+            <td class="num hl">${fmt(r.total)}</td>
+            <td class="num">
+              <span class="bar" style="width:${Math.round((r.per10k / maxPer10k) * 60)}px;background:var(--accent);opacity:.75"></span>
+              ${fmtF(r.per10k)}
+            </td>
+            <td class="num">${fmt(r.municipalities)}</td>
+          </tr>`,
+          )
+          .join("");
+
+        // Click row to drill down
+        document.querySelectorAll("#table-body tr[data-uf]").forEach((tr) => {
+          tr.addEventListener("click", () => {
+            ufSelect.value = tr.dataset.uf;
+            ufSelect.dispatchEvent(new Event("change"));
+          });
+        });
+      }
+
+      // ── state-level view (loads antenna data) ─────────────────────────────────
+      function renderStateView(uf, antData) {
+        const filtered = antData.filter((a) =>
+          ALL_TECHS.includes(a.tecnologia),
+        );
+
+        // Show tech/op filters
+        document
+          .getElementById("tech-filter-group")
+          ?.closest(".filter-row")
+          ?.style.setProperty("display", "");
+        document
+          .getElementById("op-filter-group")
+          ?.closest(".filter-row")
+          ?.style.setProperty("display", "");
+
+        // Build siteMaps per municipality
         const siteMaps = {};
-        for (const a of antData) {
-          if (!ALL_TECHS.includes(a.tecnologia)) continue;
+        for (const a of filtered) {
           const c = a.municipio;
           if (!siteMaps[c]) siteMaps[c] = new Map();
           const key = `${a.lat.toFixed(3)},${a.lon.toFixed(3)}`;
@@ -538,10 +934,8 @@
           if (a.nova) s.isNew = true;
         }
 
-        // rawCity: raw antenna entry counts per tech/op (for distribution bars)
         const rawCity = {};
-        for (const a of antData) {
-          if (!ALL_TECHS.includes(a.tecnologia)) continue;
+        for (const a of filtered) {
           if (!rawCity[a.municipio])
             rawCity[a.municipio] = { techs: {}, ops: {} };
           rawCity[a.municipio].techs[a.tecnologia] =
@@ -550,45 +944,87 @@
             (rawCity[a.municipio].ops[a.operadora] || 0) + 1;
         }
 
-        allRows = Object.entries(popData.municipios).map(([city, info]) => ({
-          city,
-          pop: info.populacao,
-          techs: rawCity[city]?.techs ?? {},
-          ops: rawCity[city]?.ops ?? {},
-          _sites: siteMaps[city] ? [...siteMaps[city].values()] : [],
+        // Get municipalities for this state
+        const stateMunicipalities = Object.entries(municipalitiesIndex).filter(
+          ([, m]) => m.uf === uf,
+        );
+
+        allRows = stateMunicipalities.map(([, info]) => ({
+          city: info.nome,
+          pop: info.populacao || 0,
+          techs: rawCity[info.nome]?.techs ?? {},
+          ops: rawCity[info.nome]?.ops ?? {},
+          _sites: siteMaps[info.nome] ? [...siteMaps[info.nome].values()] : [],
         }));
 
-        // Populate standalone operator buttons
-        const ops = [...new Set(antData.map((a) => a.operadora))].sort();
+        // Populate operator buttons
+        const ops = [...new Set(filtered.map((a) => a.operadora))].sort();
         const opGroup = document.getElementById("op-filter-group");
-        if (
-          opGroup &&
-          opGroup.querySelectorAll('[data-op]:not([data-op=""])').length === 0
-        ) {
-          ops.forEach((op) => {
-            const btn = document.createElement("button");
-            btn.className = "filter-btn" + (op === activeOp ? " active" : "");
-            btn.dataset.op = op;
-            btn.textContent = op;
-            opGroup.appendChild(btn);
-          });
-          if (activeOp) {
-            document
-              .querySelector('#op-filter-group .filter-btn[data-op=""]')
-              .classList.remove("active");
-          } else {
-            document
-              .querySelector('#op-filter-group .filter-btn[data-op=""]')
-              .classList.add("active");
-          }
+        // Reset op buttons
+        opGroup.innerHTML =
+          '<button class="filter-btn active" data-op="">Todos</button>';
+        ops.forEach((op) => {
+          const btn = document.createElement("button");
+          btn.className = "filter-btn" + (op === activeOp ? " active" : "");
+          btn.dataset.op = op;
+          btn.textContent = op;
+          opGroup.appendChild(btn);
+        });
+        if (activeOp) {
+          opGroup.querySelector('[data-op=""]')?.classList.remove("active");
         }
 
-        // Restore tech filter active state from localStorage
+        // Restore tech filter
         document
           .querySelectorAll("#tech-filter-group .filter-btn")
           .forEach((b) => {
             b.classList.toggle("active", b.dataset.tech === activeTech);
           });
+
+        // Rebuild main content
+        document.querySelector("main").innerHTML = `
+          <div class="cards" id="summary-cards"></div>
+          <section>
+            <h2 id="section-heading">Torres por habitante</h2>
+            <div class="charts">
+              <div class="chart-box">
+                <h3 id="chart-per-capita-title">Torres por 10 mil hab. — por município</h3>
+                <canvas id="chart-per-capita" height="320"></canvas>
+              </div>
+              <div class="chart-box">
+                <h3>Distribuição de tecnologia por município</h3>
+                <canvas id="chart-tech" height="320"></canvas>
+              </div>
+            </div>
+          </section>
+          <section>
+            <h2>Destaques</h2>
+            <div class="ranking" id="ranking"></div>
+          </section>
+          <section>
+            <h2>Tabela completa — ${UF_NAMES[uf]}</h2>
+            <div class="table-wrap">
+              <table id="main-table">
+                <thead>
+                  <tr>
+                    <th data-col="city" data-type="str">Município <span class="sort-icon">↕</span></th>
+                    <th data-col="pop" data-type="num" class="num">População <span class="sort-icon">↕</span></th>
+                    <th data-col="total" data-type="num" class="num"><span id="th-towers">Torres</span> <span class="sort-icon">↕</span></th>
+                    <th data-col="per10k" data-type="num" class="num sorted">/ 10 mil hab. <span class="sort-icon">↓</span></th>
+                    <th data-col="newPct" data-type="num" class="num">Novas (%) <span class="sort-icon">↕</span></th>
+                    <th>Operadoras</th>
+                    <th>Tecnologias</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+              </table>
+            </div>
+          </section>
+          <footer><p>* Pop. &lt; 5 mil — per capita pode ser pouco representativo</p></footer>
+        `;
+
+        initStateCharts();
+        applyStateFilter(activeTech, activeOp);
 
         // Wire filter buttons
         document
@@ -602,7 +1038,7 @@
             btn.classList.add("active");
             activeTech = btn.dataset.tech;
             saveFilters();
-            applyFilter(activeTech, activeOp);
+            applyStateFilter(activeTech, activeOp);
           });
 
         document
@@ -616,17 +1052,22 @@
             btn.classList.add("active");
             activeOp = btn.dataset.op;
             saveFilters();
-            applyFilter(activeTech, activeOp);
+            applyStateFilter(activeTech, activeOp);
           });
 
-        initCharts();
-
-        // Initial render using localStorage filter state
-        applyFilter(activeTech, activeOp);
+        wireTableSort(() => {
+          const rows = deriveStateRows(activeTech, activeOp);
+          renderStateTable(
+            sortedRows(rows),
+            Math.max(...rows.map((r) => r.per10k), 1),
+            activeTech === "Todos"
+              ? "var(--accent)"
+              : (TECH_COLOR[activeTech] ?? "var(--accent)"),
+          );
+        });
       }
 
-      // ── derive rows for the active filter ─────────────────────────────────────────
-      function deriveRows(tech, op) {
+      function deriveStateRows(tech, op) {
         return allRows.map((r) => {
           let total = 0,
             newCount = 0;
@@ -645,26 +1086,24 @@
         });
       }
 
-      // ── apply filter & re-render everything ───────────────────────────────────────
-      function applyFilter(tech, op) {
-        activeTech = tech;
-        activeOp = op;
+      function applyStateFilter(tech, op) {
         const label = tech === "Todos" ? "Todas as gerações" : tech;
         const techColor = TECH_COLOR[tech] ?? "var(--muted)";
 
-        document.getElementById("chart-per-capita-title").textContent =
-          `Torres ${label} por 10 mil hab. — por município`;
-        document.getElementById("th-towers").textContent =
-          `Torres ${tech === "Todos" ? "" : tech}`.trim();
+        const el = document.getElementById("chart-per-capita-title");
+        if (el)
+          el.textContent = `Torres ${label} por 10 mil hab. — por município`;
+        const thEl = document.getElementById("th-towers");
+        if (thEl)
+          thEl.textContent = `Torres ${tech === "Todos" ? "" : tech}`.trim();
 
-        const rows = deriveRows(tech, op);
-        const totalPop = Object.values(popData.municipios).reduce(
-          (s, m) => s + m.populacao,
-          0,
-        );
+        const rows = deriveStateRows(tech, op);
+        const totalPop = allRows.reduce((s, r) => s + r.pop, 0);
         const totalTowers = rows.reduce((s, r) => s + r.total, 0);
         const totalNew = rows.reduce((s, r) => s + r.new, 0);
-        const globalPer = +((totalTowers / totalPop) * 10000).toFixed(2);
+        const globalPer = totalPop
+          ? +((totalTowers / totalPop) * 10000).toFixed(2)
+          : 0;
         const cities5g = rows.filter((r) => r.has5g).length;
         const operators = [
           ...new Set(allRows.flatMap((r) => Object.keys(r.ops))),
@@ -686,7 +1125,7 @@
           {
             label: "População total",
             value: fmt(totalPop),
-            sub: popData.municipios[rows[0]?.city]?.ano ?? "",
+            sub: "",
           },
           { label: "Torres / 10 mil hab.", value: fmtF(globalPer), sub: label },
           {
@@ -697,10 +1136,10 @@
         ]
           .map(
             (c) => `<div class="card">
-    <div class="label">${c.label}</div>
-    <div class="value">${c.value}</div>
-    <div class="sub">${c.sub}</div>
-  </div>`,
+            <div class="label">${c.label}</div>
+            <div class="value">${c.value}</div>
+            <div class="sub">${c.sub}</div>
+          </div>`,
           )
           .join("");
 
@@ -709,30 +1148,34 @@
           tech === "Todos"
             ? "var(--accent)"
             : (TECH_COLOR[tech] ?? "var(--accent)");
-        renderTable(sortedRows(rows), maxPer10k, barColor);
+        renderStateTable(sortedRows(rows), maxPer10k, barColor);
 
+        // Update charts
         const ordered = [...rows].sort((a, b) => b.per10k - a.per10k);
-        chartPerCapita.data.labels = ordered.map((r) =>
-          r.pop < POP_THRESHOLD ? r.city + " *" : r.city,
-        );
-        chartPerCapita.data.datasets[0].label = `Torres ${label} / 10 mil hab.`;
-        chartPerCapita.data.datasets[0].data = ordered.map((r) => r.per10k);
-        chartPerCapita.data.datasets[0].backgroundColor =
-          tech === "Todos"
-            ? ordered.map((r) =>
-                r.pop < POP_THRESHOLD
-                  ? "rgba(255,255,255,.18)"
-                  : r.has5g
-                    ? "rgba(0,204,153,.75)"
-                    : "rgba(59,130,246,.6)",
-              )
-            : ordered.map((r) =>
-                r.pop < POP_THRESHOLD
-                  ? "rgba(255,255,255,.18)"
-                  : techColor + "bf",
-              );
-        chartPerCapita.update();
+        if (chartPerCapita) {
+          chartPerCapita.data.labels = ordered.map((r) =>
+            r.pop < POP_THRESHOLD ? r.city + " *" : r.city,
+          );
+          chartPerCapita.data.datasets[0].label = `Torres ${label} / 10 mil hab.`;
+          chartPerCapita.data.datasets[0].data = ordered.map((r) => r.per10k);
+          chartPerCapita.data.datasets[0].backgroundColor =
+            tech === "Todos"
+              ? ordered.map((r) =>
+                  r.pop < POP_THRESHOLD
+                    ? "rgba(255,255,255,.18)"
+                    : r.has5g
+                      ? "rgba(0,204,153,.75)"
+                      : "rgba(59,130,246,.6)",
+                )
+              : ordered.map((r) =>
+                  r.pop < POP_THRESHOLD
+                    ? "rgba(255,255,255,.18)"
+                    : techColor + "bf",
+                );
+          chartPerCapita.update();
+        }
 
+        // Rankings
         const byPer10k = [...rows]
           .filter((r) => r.total > 0)
           .sort((a, b) => b.per10k - a.per10k);
@@ -781,7 +1224,35 @@
         ].join("");
       }
 
-      // ── table ─────────────────────────────────────────────────────────────────────
+      function renderStateTable(data, maxPer10k, barColor) {
+        document.getElementById("table-body").innerHTML = data
+          .map(
+            (r) => `
+          <tr>
+            <td class="city-name">${r.city}${r.has5g ? '<span class="badge-5g">5G</span>' : ""}${r.pop < POP_THRESHOLD ? ' <span style="color:var(--muted);font-size:.7rem" title="Pop. < ' + fmt(POP_THRESHOLD) + '">*</span>' : ""}</td>
+            <td class="num">${fmt(r.pop)}</td>
+            <td class="num hl">${r.total}</td>
+            <td class="num">
+              <span class="bar" style="width:${Math.round((r.per10k / maxPer10k) * 60)}px;background:${barColor};opacity:.75"></span>
+              ${fmtF(r.per10k)}
+            </td>
+            <td class="num">${r.newPct > 0 ? fmtF(r.newPct) + "%" : "—"}</td>
+            <td>${stackBar(
+              r.ops,
+              OP_COLOR,
+              Object.values(r.ops).reduce((s, v) => s + v, 0),
+            )}</td>
+            <td>${stackBar(
+              r.techs,
+              TECH_COLOR,
+              Object.values(r.techs).reduce((s, v) => s + v, 0),
+            )}</td>
+          </tr>`,
+          )
+          .join("");
+      }
+
+      // ── shared helpers ────────────────────────────────────────────────────────
       function sortedRows(rows) {
         return [...rows].sort((a, b) => {
           const av = a[sortCol],
@@ -792,64 +1263,30 @@
         });
       }
 
-      function renderTable(data, maxPer10k, barColor) {
-        document.getElementById("table-body").innerHTML = data
-          .map(
-            (r) => `
-    <tr>
-      <td class="city-name">${r.city}${r.has5g ? '<span class="badge-5g">5G</span>' : ""}${r.pop < POP_THRESHOLD ? ' <span style="color:var(--muted);font-size:.7rem" title="Pop. < ' + fmt(POP_THRESHOLD) + '">*</span>' : ""}</td>
-      <td class="num">${fmt(r.pop)}</td>
-      <td class="num hl">${r.total}</td>
-      <td class="num">
-        <span class="bar" style="display:inline-block;width:${Math.round((r.per10k / maxPer10k) * 60)}px;height:8px;border-radius:3px;vertical-align:middle;background:${barColor};opacity:.75"></span>
-        ${fmtF(r.per10k)}
-      </td>
-      <td class="num">${r.newPct > 0 ? fmtF(r.newPct) + "%" : "—"}</td>
-      <td>${stackBar(
-        r.ops,
-        OP_COLOR,
-        Object.values(r.ops).reduce((s, v) => s + v, 0),
-      )}</td>
-      <td>${stackBar(
-        r.techs,
-        TECH_COLOR,
-        Object.values(r.techs).reduce((s, v) => s + v, 0),
-      )}</td>
-    </tr>`,
-          )
-          .join("");
+      function wireTableSort(renderFn) {
+        document.querySelectorAll("thead th[data-col]").forEach((th) => {
+          th.addEventListener("click", () => {
+            const col = th.dataset.col;
+            if (sortCol === col) {
+              sortDir *= -1;
+            } else {
+              sortCol = col;
+              sortDir = col === "city" ? 1 : -1;
+            }
+            document.querySelectorAll("thead th").forEach((t) => {
+              t.classList.remove("sorted");
+              const ic = t.querySelector(".sort-icon");
+              if (ic) ic.textContent = "↕";
+            });
+            th.classList.add("sorted");
+            th.querySelector(".sort-icon").textContent =
+              sortDir === -1 ? "↓" : "↑";
+            renderFn();
+          });
+        });
       }
 
-      document.querySelectorAll("thead th[data-col]").forEach((th) => {
-        th.addEventListener("click", () => {
-          const col = th.dataset.col;
-          if (sortCol === col) {
-            sortDir *= -1;
-          } else {
-            sortCol = col;
-            sortDir = col === "city" ? 1 : -1;
-          }
-          document.querySelectorAll("thead th").forEach((t) => {
-            t.classList.remove("sorted");
-            const ic = t.querySelector(".sort-icon");
-            if (ic) ic.textContent = "↕";
-          });
-          th.classList.add("sorted");
-          th.querySelector(".sort-icon").textContent =
-            sortDir === -1 ? "↓" : "↑";
-          const rows = deriveRows(activeTech, activeOp);
-          renderTable(
-            sortedRows(rows),
-            Math.max(...rows.map((r) => r.per10k), 1),
-            activeTech === "Todos"
-              ? "var(--accent)"
-              : (TECH_COLOR[activeTech] ?? "var(--accent)"),
-          );
-        });
-      });
-
-      // ── charts (init once, data updated reactively) ───────────────────────────────
-      function initCharts() {
+      function initStateCharts() {
         chartPerCapita = new Chart(
           document.getElementById("chart-per-capita"),
           {
@@ -878,7 +1315,7 @@
           },
         );
 
-        const initRows = deriveRows("Todos", "");
+        const initRows = deriveStateRows("Todos", "");
         const ordered = [...initRows].sort((a, b) => {
           const ta = Object.values(a.techs).reduce((s, v) => s + v, 0);
           const tb = Object.values(b.techs).reduce((s, v) => s + v, 0);
@@ -920,10 +1357,7 @@
         });
       }
 
-      load().catch((err) => {
-        document.querySelector("main").innerHTML =
-          `<p style="color:#f85149;padding:2rem">Erro ao carregar dados: ${err.message}</p>`;
-      });
+      loadScope();
     </script>
   </body>
 </html>

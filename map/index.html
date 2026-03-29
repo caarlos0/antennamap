@@ -3,25 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Conectividade Costa Oeste – Paraná</title>
+    <title>AntennaMap Brasil</title>
     <link
       rel="icon"
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2' stroke='%230c9'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z'/%3E%3C/svg%3E"
     />
 
-    <meta property="og:title" content="Conectividade Costa Oeste – Paraná" />
+    <meta property="og:title" content="AntennaMap Brasil" />
     <meta
       property="og:description"
-      content="Mapa de antenas licenciadas pela ANATEL na região Costa Oeste do Paraná."
+      content="Mapa de antenas licenciadas pela ANATEL em todo o Brasil."
     />
     <meta property="og:image" content="../og-image.png" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Conectividade Costa Oeste – Paraná" />
+    <meta name="twitter:title" content="AntennaMap Brasil" />
     <meta
       name="twitter:description"
-      content="Mapa de antenas licenciadas pela ANATEL na região Costa Oeste do Paraná."
+      content="Mapa de antenas licenciadas pela ANATEL em todo o Brasil."
     />
     <meta name="twitter:image" content="../og-image.png" />
 
@@ -45,8 +45,12 @@
       }
 
       /* ── Map ───────────────────────── */
-      #map {
+      #map-wrap {
         flex: 1;
+        position: relative;
+      }
+      #map {
+        height: 100%;
       }
 
       /* ── Markers ─────────────────────────────── */
@@ -127,6 +131,129 @@
         opacity: 0.5;
         flex-shrink: 0;
       }
+
+      /* ── Search ─────────────────────── */
+      #search-container {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 1000;
+        width: 280px;
+      }
+      #search-input {
+        width: 100%;
+        padding: 8px 12px 8px 32px;
+        border: 1px solid #333;
+        border-radius: 6px;
+        background: rgba(15, 15, 15, 0.92);
+        color: #e6edf3;
+        font-size: 0.85rem;
+        font-family: inherit;
+        outline: none;
+        backdrop-filter: blur(8px);
+      }
+      #search-input::placeholder {
+        color: #555;
+      }
+      #search-input:focus {
+        border-color: #0c9;
+      }
+      .search-icon {
+        position: absolute;
+        top: 9px;
+        left: 10px;
+        width: 14px;
+        height: 14px;
+        color: #555;
+        pointer-events: none;
+      }
+      #search-results {
+        display: none;
+        margin-top: 4px;
+        background: rgba(20, 20, 20, 0.95);
+        border: 1px solid #333;
+        border-radius: 6px;
+        overflow: hidden;
+        backdrop-filter: blur(8px);
+      }
+      .search-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 0.82rem;
+        border-bottom: 1px solid #222;
+      }
+      .search-item:last-child {
+        border-bottom: none;
+      }
+      .search-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .search-name {
+        color: #e6edf3;
+        font-weight: 500;
+      }
+      .search-meta {
+        color: #555;
+        font-size: 0.75rem;
+      }
+
+      /* ── Loading ────────────────────── */
+      #loading-indicator {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: rgba(15, 15, 15, 0.9);
+        border: 1px solid #333;
+        border-radius: 6px;
+        color: #aaa;
+        font-size: 0.8rem;
+        backdrop-filter: blur(4px);
+      }
+      .loading-spinner {
+        width: 14px;
+        height: 14px;
+        border: 2px solid #333;
+        border-top-color: #0c9;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ── Zoom hint ──────────────────── */
+      #zoom-hint {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 999;
+        padding: 12px 24px;
+        background: rgba(15, 15, 15, 0.85);
+        border: 1px solid #333;
+        border-radius: 8px;
+        color: #888;
+        font-size: 0.9rem;
+        pointer-events: none;
+        backdrop-filter: blur(4px);
+      }
+
+      @media (max-width: 599px) {
+        #search-container {
+          width: calc(100% - 20px);
+        }
+      }
     </style>
   </head>
   <body>
@@ -146,7 +273,7 @@
               d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"
             />
           </svg>
-          Conectividade Costa Oeste Paraná
+          Conectividade Brasil
         </h1>
         <nav class="header-nav">
           <a class="tab active" href="./">
@@ -254,10 +381,40 @@
       </div>
     </header>
 
-    <div id="map"></div>
+    <div id="map-wrap">
+      <div id="map"></div>
+      <div id="search-container">
+        <svg
+          class="search-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Buscar município..."
+          autocomplete="off"
+        />
+        <div id="search-results"></div>
+      </div>
+      <div id="loading-indicator">
+        <div class="loading-spinner"></div>
+        <span>Carregando antenas…</span>
+      </div>
+      <div id="zoom-hint">Aproxime para ver as antenas</div>
+    </div>
 
     <script>
-      // ── Map logic ────────────────────────────────────────────────────────────────
+      // ── Constants ──────────────────────────────────────────────────────────────
       const TECH_COLOR = {
         "5G": "#f04",
         "4G": "#0c9",
@@ -269,6 +426,9 @@
       const ICON_CHIP = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>`;
       const ICON_CAL = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
       const TECH_PRIORITY = ["5G", "4G", "3G", "2G"];
+      const TECH_ZINDEX = { "5G": 400, "4G": 300, "3G": 200, "2G": 100 };
+      const MIN_TILE_ZOOM = 7;
+      const TILE_BASE = "../data/tiles/";
 
       function bestTech(a, b) {
         return TECH_PRIORITY.indexOf(a) <= TECH_PRIORITY.indexOf(b) ? a : b;
@@ -276,7 +436,6 @@
       function colorFor(a) {
         return TECH_COLOR[a.tecnologia] || "#888";
       }
-      const TECH_ZINDEX = { "5G": 400, "4G": 300, "3G": 200, "2G": 100 };
 
       function makeIcon(antenna) {
         const color = colorFor(antenna);
@@ -292,9 +451,30 @@
         });
       }
 
-      const MAX_DISTANCE_KM = 50;
+      function buildPopup(antenna) {
+        const opLines = [...antenna.allOps]
+          .sort()
+          .map((op) => {
+            const techs = TECH_PRIORITY.filter((t) =>
+              antenna.opTechs[op].has(t),
+            )
+              .map(
+                (t) =>
+                  `<span style="color:${TECH_COLOR[t]};font-weight:600">${t}</span>`,
+              )
+              .join(" ");
+            return `<div class="popup-row">${ICON_RSS}<strong>${op}</strong> <span style="margin-left:4px">${techs}</span></div>`;
+          })
+          .join("");
+        return `
+          ${opLines}
+          <div class="popup-row">${ICON_CHIP}${antenna.municipio}</div>
+          <div class="popup-row">${ICON_CAL}${antenna.data || "—"}${antenna.nova ? " &nbsp;<span style='color:#f73'>nova</span>" : ""}</div>
+        `;
+      }
 
-      const map = L.map("map").setView([-24.8, -53.5], 9);
+      // ── Map ────────────────────────────────────────────────────────────────────
+      const map = L.map("map").setView([-14.2, -51.9], 4);
 
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
@@ -306,16 +486,23 @@
         },
       ).addTo(map);
 
+      // ── State ──────────────────────────────────────────────────────────────────
       let allMarkers = [];
       let activeTech = localStorage.getItem("antennamap-tech") || "Todos";
       if (activeTech === "nova") activeTech = "Todos";
       let activeOp = localStorage.getItem("antennamap-op") || "";
+      const knownOps = new Set();
+      let manifest = null;
+      let municipalitiesIndex = null;
+      const loadedTiles = new Set();
+      let isLoading = false;
 
       function saveFilters() {
         localStorage.setItem("antennamap-tech", activeTech);
         localStorage.setItem("antennamap-op", activeOp);
       }
 
+      // ── Cluster ────────────────────────────────────────────────────────────────
       const clusterGroup = L.markerClusterGroup({
         disableClusteringAtZoom: 13,
         maxClusterRadius: 50,
@@ -339,6 +526,7 @@
       });
       clusterGroup.addTo(map);
 
+      // ── Filters ────────────────────────────────────────────────────────────────
       function applyFilters() {
         clusterGroup.clearLayers();
         for (const { marker, antenna } of allMarkers) {
@@ -349,12 +537,10 @@
         }
       }
 
-      // Restore tech filter active state from localStorage
       document.querySelectorAll(".filter-btn[data-tech]").forEach((b) => {
         b.classList.toggle("active", b.dataset.tech === activeTech);
       });
 
-      // Tech filter buttons
       document.querySelectorAll(".filter-btn[data-tech]").forEach((btn) => {
         btn.addEventListener("click", () => {
           document
@@ -367,7 +553,6 @@
         });
       });
 
-      // Operadora filter buttons (event delegation – buttons added dynamically)
       document
         .getElementById("op-filter-group")
         .addEventListener("click", (e) => {
@@ -382,114 +567,256 @@
           applyFilters();
         });
 
-      fetch("../antennas.json")
-        .then((r) => r.json())
-        .then((data) => {
-          data = data.filter((a) => USER_FACING_TECH.has(a.tecnologia));
+      // ── Loading & zoom hint ────────────────────────────────────────────────────
+      const loadingEl = document.getElementById("loading-indicator");
+      const zoomHintEl = document.getElementById("zoom-hint");
 
-          const siteMap = new Map();
-          for (const a of data) {
-            const key = `${a.lat.toFixed(3)},${a.lon.toFixed(3)}`;
-            if (!siteMap.has(key)) {
-              siteMap.set(key, {
-                lat: a.lat,
-                lon: a.lon,
-                tecnologia: a.tecnologia,
-                municipio: a.municipio,
-                nova: a.nova,
-                data: a.data,
-                allTechs: new Set([a.tecnologia]),
-                allOps: new Set([a.operadora]),
-                opTechs: { [a.operadora]: new Set([a.tecnologia]) },
-              });
-            } else {
-              const s = siteMap.get(key);
-              s.tecnologia = bestTech(s.tecnologia, a.tecnologia);
-              s.allTechs.add(a.tecnologia);
-              s.allOps.add(a.operadora);
-              if (!s.opTechs[a.operadora]) s.opTechs[a.operadora] = new Set();
-              s.opTechs[a.operadora].add(a.tecnologia);
-              if (a.nova) {
-                s.nova = true;
-                if (!s.data || a.data > s.data) {
-                  s.data = a.data;
-                }
-              }
+      function showLoading(show) {
+        isLoading = show;
+        if (loadingEl) loadingEl.style.display = show ? "flex" : "none";
+      }
+      function updateZoomHint() {
+        if (!zoomHintEl) return;
+        zoomHintEl.style.display =
+          map.getZoom() < MIN_TILE_ZOOM ? "flex" : "none";
+      }
+
+      // ── Tile loading ───────────────────────────────────────────────────────────
+      function boundsIntersect(tileBounds, mapBounds) {
+        const [[minLat, minLon], [maxLat, maxLon]] = tileBounds;
+        return !(
+          maxLat < mapBounds.getSouth() ||
+          minLat > mapBounds.getNorth() ||
+          maxLon < mapBounds.getWest() ||
+          minLon > mapBounds.getEast()
+        );
+      }
+
+      function processAntennas(data) {
+        const siteMap = new Map();
+        for (const a of data) {
+          if (!USER_FACING_TECH.has(a.tecnologia)) continue;
+          const key = `${a.lat.toFixed(3)},${a.lon.toFixed(3)}`;
+          if (!siteMap.has(key)) {
+            siteMap.set(key, {
+              lat: a.lat,
+              lon: a.lon,
+              tecnologia: a.tecnologia,
+              municipio: a.municipio,
+              nova: a.nova,
+              data: a.data,
+              allTechs: new Set([a.tecnologia]),
+              allOps: new Set([a.operadora]),
+              opTechs: { [a.operadora]: new Set([a.tecnologia]) },
+            });
+          } else {
+            const s = siteMap.get(key);
+            s.tecnologia = bestTech(s.tecnologia, a.tecnologia);
+            s.allTechs.add(a.tecnologia);
+            s.allOps.add(a.operadora);
+            if (!s.opTechs[a.operadora]) s.opTechs[a.operadora] = new Set();
+            s.opTechs[a.operadora].add(a.tecnologia);
+            if (a.nova) {
+              s.nova = true;
+              if (!s.data || a.data > s.data) s.data = a.data;
             }
           }
+          knownOps.add(a.operadora);
+        }
 
-          // Populate operadora filter buttons
-          const ops = [...new Set(data.map((a) => a.operadora))].sort();
-          const opGroup = document.getElementById("op-filter-group");
-          ops.forEach((op) => {
-            const btn = document.createElement("button");
-            btn.className = "filter-btn" + (op === activeOp ? " active" : "");
-            btn.dataset.op = op;
-            btn.textContent = op;
-            opGroup.appendChild(btn);
+        for (const antenna of siteMap.values()) {
+          const marker = L.marker([antenna.lat, antenna.lon], {
+            icon: makeIcon(antenna),
+            zIndexOffset: TECH_ZINDEX[antenna.tecnologia] || 0,
           });
-          // If an op is active, deactivate the "Todos" button
-          if (activeOp) {
-            document
-              .querySelector('#op-filter-group .filter-btn[data-op=""]')
-              .classList.remove("active");
-          } else {
-            document
-              .querySelector('#op-filter-group .filter-btn[data-op=""]')
-              .classList.add("active");
-          }
+          marker._antenna = antenna;
+          marker.bindPopup(buildPopup(antenna));
+          allMarkers.push({ marker, antenna });
+        }
+      }
 
-          for (const antenna of siteMap.values()) {
-            const opLines = [...antenna.allOps]
-              .sort()
-              .map((op) => {
-                const techs = TECH_PRIORITY.filter((t) =>
-                  antenna.opTechs[op].has(t),
-                )
-                  .map(
-                    (t) =>
-                      `<span style="color:${TECH_COLOR[t]};font-weight:600">${t}</span>`,
-                  )
-                  .join(" ");
-                return `<div class="popup-row">${ICON_RSS}<strong>${op}</strong> <span style="margin-left:4px">${techs}</span></div>`;
-              })
-              .join("");
-            const marker = L.marker([antenna.lat, antenna.lon], {
-              icon: makeIcon(antenna),
-              zIndexOffset: TECH_ZINDEX[antenna.tecnologia] || 0,
-            });
-            marker._antenna = antenna;
-            marker.bindPopup(`
-        ${opLines}
-        <div class="popup-row">${ICON_CHIP}${antenna.municipio}</div>
-        <div class="popup-row">${ICON_CAL}${antenna.data || "—"}${antenna.nova ? " &nbsp;<span style='color:#f73'>nova</span>" : ""}</div>
-      `);
-            allMarkers.push({ marker, antenna });
-          }
-          applyFilters();
+      function updateOperatorButtons() {
+        const opGroup = document.getElementById("op-filter-group");
+        const existing = new Set(
+          [...opGroup.querySelectorAll("[data-op]")].map((b) => b.dataset.op),
+        );
+        for (const op of [...knownOps].sort()) {
+          if (existing.has(op)) continue;
+          const btn = document.createElement("button");
+          btn.className = "filter-btn" + (op === activeOp ? " active" : "");
+          btn.dataset.op = op;
+          btn.textContent = op;
+          opGroup.appendChild(btn);
+        }
+        if (activeOp) {
+          opGroup.querySelector('[data-op=""]')?.classList.remove("active");
+        } else {
+          opGroup.querySelector('[data-op=""]')?.classList.add("active");
+        }
+      }
 
-          // Focus on user location only if near an actual antenna site
-          if (window.isSecureContext && navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              (pos) => {
-                const userLL = [pos.coords.latitude, pos.coords.longitude];
-                const isNearby = [...siteMap.values()].some(
-                  (s) =>
-                    map.distance(userLL, [s.lat, s.lon]) / 1000 <=
-                    MAX_DISTANCE_KM,
+      async function loadVisibleTiles() {
+        if (!manifest) return;
+        updateZoomHint();
+
+        if (map.getZoom() < MIN_TILE_ZOOM) return;
+
+        const mapBounds = map.getBounds();
+        const tilesToLoad = [];
+
+        for (const tiles of Object.values(manifest)) {
+          for (const tile of tiles) {
+            if (loadedTiles.has(tile.file)) continue;
+            if (!boundsIntersect(tile.bounds, mapBounds)) continue;
+            tilesToLoad.push(tile);
+          }
+        }
+
+        if (tilesToLoad.length === 0) return;
+
+        showLoading(true);
+        try {
+          for (let i = 0; i < tilesToLoad.length; i += 10) {
+            const batch = tilesToLoad.slice(i, i + 10);
+            const results = await Promise.all(
+              batch.map(async (tile) => {
+                const data = await fetch(TILE_BASE + tile.file).then((r) =>
+                  r.json(),
                 );
-                if (isNearby) map.setView(userLL, 13);
-              },
-              () => {},
-              { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+                return { tile, data };
+              }),
             );
+            for (const { tile, data } of results) {
+              loadedTiles.add(tile.file);
+              processAntennas(data);
+            }
           }
-        })
-        .catch((err) => {
-          console.error("erro ao carregar antennas.json", err);
-          document.getElementById("map").innerHTML =
-            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#f85149;padding:2rem;text-align:center">Erro ao carregar dados das antenas. Tente recarregar a página.</div>';
+          updateOperatorButtons();
+          applyFilters();
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // ── Search ─────────────────────────────────────────────────────────────────
+      function initSearch() {
+        const input = document.getElementById("search-input");
+        const results = document.getElementById("search-results");
+        if (!input || !results || !municipalitiesIndex) return;
+
+        const entries = Object.values(municipalitiesIndex)
+          .filter((m) => m.lat)
+          .map((m) => ({
+            label: `${m.nome} – ${m.uf}`,
+            search: `${m.nome} ${m.uf}`.toLowerCase(),
+            lat: m.lat,
+            lon: m.lon,
+            antenas: m.antenas || 0,
+          }));
+
+        let debounceTimer;
+
+        input.addEventListener("input", () => {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            const q = input.value.trim().toLowerCase();
+            if (q.length < 2) {
+              results.style.display = "none";
+              return;
+            }
+
+            const matches = entries
+              .filter((e) => e.search.includes(q))
+              .sort((a, b) => b.antenas - a.antenas)
+              .slice(0, 8);
+
+            if (matches.length === 0) {
+              results.innerHTML =
+                '<div class="search-item"><span class="search-meta">Nenhum resultado</span></div>';
+              results.style.display = "block";
+              return;
+            }
+
+            results.innerHTML = matches
+              .map(
+                (m) => `
+              <div class="search-item" data-lat="${m.lat}" data-lon="${m.lon}">
+                <span class="search-name">${m.label}</span>
+                <span class="search-meta">${m.antenas} antenas</span>
+              </div>`,
+              )
+              .join("");
+            results.style.display = "block";
+          }, 150);
         });
+
+        results.addEventListener("click", (e) => {
+          const item = e.target.closest(".search-item");
+          if (!item || !item.dataset.lat) return;
+          const lat = parseFloat(item.dataset.lat);
+          const lon = parseFloat(item.dataset.lon);
+          map.flyTo([lat, lon], 13);
+          input.value = "";
+          results.style.display = "none";
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!e.target.closest("#search-container")) {
+            results.style.display = "none";
+          }
+        });
+
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
+            input.value = "";
+            results.style.display = "none";
+            input.blur();
+          }
+        });
+      }
+
+      // ── Geolocation ────────────────────────────────────────────────────────────
+      function isInBrazil(lat, lon) {
+        return lat >= -34 && lat <= 6 && lon >= -74 && lon <= -34;
+      }
+
+      function tryGeolocation() {
+        if (!window.isSecureContext || !navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const { latitude, longitude } = pos.coords;
+            if (isInBrazil(latitude, longitude)) {
+              map.flyTo([latitude, longitude], 12);
+            }
+          },
+          () => {},
+          { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+        );
+      }
+
+      // ── Init ───────────────────────────────────────────────────────────────────
+      async function init() {
+        showLoading(true);
+        try {
+          [manifest, municipalitiesIndex] = await Promise.all([
+            fetch(TILE_BASE + "manifest.json").then((r) => r.json()),
+            fetch("../data/municipalities.json").then((r) => r.json()),
+          ]);
+          initSearch();
+          map.on("moveend", loadVisibleTiles);
+          updateZoomHint();
+          await loadVisibleTiles();
+          tryGeolocation();
+        } catch (err) {
+          console.error("erro ao inicializar", err);
+          document.getElementById("map").innerHTML =
+            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#f85149;padding:2rem;text-align:center">Erro ao carregar dados. Tente recarregar a página.</div>';
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      init();
     </script>
   </body>
 </html>
