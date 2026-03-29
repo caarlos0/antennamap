@@ -524,27 +524,6 @@
         animate: false,
         iconCreateFunction(cluster) {
           const n = cluster.getChildCount();
-          const counts = {};
-          // only itemize tech breakdown for small clusters
-          if (n <= 200) {
-            for (const m of cluster.getAllChildMarkers()) {
-              const t = m._antenna.tecnologia;
-              counts[t] = (counts[t] || 0) + 1;
-            }
-          }
-          const hasCounts = Object.keys(counts).length > 0;
-          if (hasCounts) {
-            const parts = TECH_PRIORITY.filter((t) => counts[t]).map(
-              (t) =>
-                `<span style="color:${TECH_COLOR[t]}">${counts[t]}<small>${t}</small></span>`,
-            );
-            return L.divIcon({
-              className: "",
-              html: `<div class="cluster-icon">${parts.join("")}</div>`,
-              iconSize: null,
-            });
-          }
-          // large clusters: just show total count
           const size = n > 5000 ? "lg" : n > 500 ? "md" : "sm";
           return L.divIcon({
             className: "",
@@ -608,8 +587,8 @@
       }
       function updateZoomHint() {
         if (!zoomHintEl) return;
-        zoomHintEl.style.display =
-          map.getZoom() < MIN_TILE_ZOOM ? "flex" : "none";
+        const show = map.getZoom() < MIN_TILE_ZOOM && allMarkers.length === 0;
+        zoomHintEl.style.display = show ? "flex" : "none";
       }
 
       // ── Tile loading ───────────────────────────────────────────────────────────
