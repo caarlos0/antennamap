@@ -458,7 +458,7 @@
             <div id="scope-results"></div>
           </div>
         </div>
-        <div class="sep"></div>
+        <div class="sep" id="tech-sep" style="display: none"></div>
         <div class="filter-row" id="tech-filter-row" style="display: none">
           <span class="filter-label">
             <svg
@@ -484,7 +484,7 @@
             <button class="filter-btn" data-tech="2G">2G</button>
           </div>
         </div>
-        <div class="sep"></div>
+        <div class="sep" id="op-sep" style="display: none"></div>
         <div class="filter-row" id="op-filter-row" style="display: none">
           <span class="filter-label">
             <svg
@@ -1029,12 +1029,11 @@
 
       // ── Routing ─────────────────────────────────────────────────────────────────
       function toggleFilters(show) {
-        document.getElementById("tech-filter-row").style.display = show
-          ? ""
-          : "none";
-        document.getElementById("op-filter-row").style.display = show
-          ? ""
-          : "none";
+        const d = show ? "" : "none";
+        document.getElementById("tech-sep").style.display = d;
+        document.getElementById("tech-filter-row").style.display = d;
+        document.getElementById("op-sep").style.display = d;
+        document.getElementById("op-filter-row").style.display = d;
       }
 
       async function loadScope() {
