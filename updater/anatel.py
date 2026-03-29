@@ -42,8 +42,13 @@ ENTITY_ALIASES = {
     "TELEFONICA BRASIL S.A.": "Vivo",
     "Telefonica Brasil S.a.": "Vivo",
     "CLARO S.A.": "Claro",
+    "Claro S.A.": "Claro",
     "TIM S A": "TIM",
+    "TIM S/A": "TIM",
 }
+
+# Only include antennas from the 3 major cell phone carriers
+ALLOWED_OPERATORS = {"Vivo", "Claro", "TIM"}
 
 ALL_UFS = [
     "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO",
@@ -152,6 +157,8 @@ def rows_to_antennas(rows: list[dict]) -> list[dict]:
 
     for row in rows:
         entity = normalize_entity(row.get("NomeEntidade", ""))
+        if entity not in ALLOWED_OPERATORS:
+            continue
         raw_tech = normalize(row.get("Tecnologia", ""))
         lat_s = normalize(row.get("Latitude", ""))
         lon_s = normalize(row.get("Longitude", ""))
