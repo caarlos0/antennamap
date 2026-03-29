@@ -9,6 +9,7 @@ you want to refresh the estimates (IBGE publishes new estimates annually).
 """
 
 import gzip
+import html
 import json
 import sys
 import urllib.request
@@ -47,7 +48,7 @@ def main() -> None:
         print(f"  {name} ({ibge_id})...", end=" ", file=sys.stderr, flush=True)
         try:
             pop, year = fetch_population(ibge_id)
-            result[name] = {"ibge_id": ibge_id, "populacao": pop, "ano": year}
+            result[html.escape(name)] = {"ibge_id": ibge_id, "populacao": pop, "ano": year}
             sample_year = year
             print(f"{pop:,} hab ({year})", file=sys.stderr)
         except Exception as exc:

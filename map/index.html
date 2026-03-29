@@ -270,15 +270,6 @@
       const ICON_CAL = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
       const TECH_PRIORITY = ["5G", "4G", "3G", "2G"];
 
-      function escapeHtml(s) {
-        return s
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
       function bestTech(a, b) {
         return TECH_PRIORITY.indexOf(a) <= TECH_PRIORITY.indexOf(b) ? a : b;
       }
@@ -460,7 +451,7 @@
                       `<span style="color:${TECH_COLOR[t]};font-weight:600">${t}</span>`,
                   )
                   .join(" ");
-                return `<div class="popup-row">${ICON_RSS}<strong>${escapeHtml(op)}</strong> <span style="margin-left:4px">${techs}</span></div>`;
+                return `<div class="popup-row">${ICON_RSS}<strong>${op}</strong> <span style="margin-left:4px">${techs}</span></div>`;
               })
               .join("");
             const marker = L.marker([antenna.lat, antenna.lon], {
@@ -470,8 +461,8 @@
             marker._antenna = antenna;
             marker.bindPopup(`
         ${opLines}
-        <div class="popup-row">${ICON_CHIP}${escapeHtml(antenna.municipio)}</div>
-        <div class="popup-row">${ICON_CAL}${escapeHtml(antenna.data || "—")}${antenna.nova ? " &nbsp;<span style='color:#f73'>nova</span>" : ""}</div>
+        <div class="popup-row">${ICON_CHIP}${antenna.municipio}</div>
+        <div class="popup-row">${ICON_CAL}${antenna.data || "—"}${antenna.nova ? " &nbsp;<span style='color:#f73'>nova</span>" : ""}</div>
       `);
             allMarkers.push({ marker, antenna });
           }

@@ -5,6 +5,7 @@ and neighboring municipalities, converting to antennas.json for index.html.
 """
 
 import csv
+import html
 import io
 import json
 import sys
@@ -207,9 +208,9 @@ def to_json(rows: list[dict], municipio: str, seen: set) -> list[dict]:
             date_fmt = ""
 
         antennas.append({
-            "operadora": entity,
+            "operadora": html.escape(entity),
             "tecnologia": tech,
-            "municipio": municipio,
+            "municipio": html.escape(municipio),
             "lat": lat,
             "lon": lon,
             "data": date_fmt,
