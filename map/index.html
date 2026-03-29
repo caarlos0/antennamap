@@ -846,7 +846,11 @@
             fetch("../data/municipalities.json").then((r) => r.json()),
           ]);
           initSearch();
-          map.on("moveend", loadVisibleTiles);
+          let tileTimer;
+          map.on("moveend", () => {
+            clearTimeout(tileTimer);
+            tileTimer = setTimeout(loadVisibleTiles, 200);
+          });
           updateZoomHint();
           await loadVisibleTiles();
           tryGeolocation();
