@@ -20,10 +20,10 @@
         --text: #e6edf3;
         --muted: #8b949e;
         --accent: #00cc99;
-        --g5: #00cc99;
-        --g4: #3b82f6;
-        --g3: #f59e0b;
-        --g2: #6b7280;
+        --g5: #f04;
+        --g4: #0c9;
+        --g3: #fa0;
+        --g2: #88f;
       }
 
       body {
@@ -464,13 +464,22 @@
 
       const POP_THRESHOLD = 5000;
       const TECH_COLOR = {
-        "5G": "#00cc99",
-        "4G": "#3b82f6",
-        "3G": "#f59e0b",
-        "2G": "#6b7280",
+        "5G": "#f04",
+        "4G": "#0c9",
+        "3G": "#fa0",
+        "2G": "#88f",
       };
       const OP_COLOR = { Claro: "#e05c2a", TIM: "#0050a0", Vivo: "#660099" };
       const ALL_TECHS = ["5G", "4G", "3G", "2G"];
+
+      function escapeHtml(s) {
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
 
       const fmt = (n) => n.toLocaleString("pt-BR");
       const fmtF = (n, d = 1) =>
@@ -497,6 +506,7 @@
 
       // ── state ─────────────────────────────────────────────────────────────────────
       let activeTech = localStorage.getItem("antennamap-tech") || "Todos";
+      if (activeTech === "nova") activeTech = "Todos";
       let activeOp = localStorage.getItem("antennamap-op") || "";
       let allRows = [];
       let popData;
@@ -630,12 +640,7 @@
           let total = 0,
             newCount = 0;
           for (const s of r._sites) {
-            const techOk =
-              tech === "Todos"
-                ? true
-                : tech === "nova"
-                  ? s.isNew
-                  : s.techs.has(tech);
+            const techOk = tech === "Todos" ? true : s.techs.has(tech);
             const opOk = !op || s.ops.has(op);
             if (techOk && opOk) {
               total++;
@@ -756,7 +761,7 @@
           return `<div class="rank-box"><h3>${title}</h3>${items
             .map(
               (r) =>
-                `<div class="rank-item"><span>${r.city}${r.pop < POP_THRESHOLD ? ' <span style="color:var(--muted);font-size:.7rem">*</span>' : ""}</span><span class="rank-val">${valFn(r)}</span></div>`,
+                `<div class="rank-item"><span>${escapeHtml(r.city)}${r.pop < POP_THRESHOLD ? ' <span style="color:var(--muted);font-size:.7rem">*</span>' : ""}</span><span class="rank-val">${valFn(r)}</span></div>`,
             )
             .join("")}</div>`;
         }
@@ -801,7 +806,7 @@
           .map(
             (r) => `
     <tr>
-      <td class="city-name">${r.city}${r.has5g ? '<span class="badge-5g">5G</span>' : ""}${r.pop < POP_THRESHOLD ? ' <span style="color:var(--muted);font-size:.7rem" title="Pop. < ' + fmt(POP_THRESHOLD) + '">*</span>' : ""}</td>
+      <td class="city-name">${escapeHtml(r.city)}${r.has5g ? '<span class="badge-5g">5G</span>' : ""}${r.pop < POP_THRESHOLD ? ' <span style="color:var(--muted);font-size:.7rem" title="Pop. < ' + fmt(POP_THRESHOLD) + '">*</span>' : ""}</td>
       <td class="num">${fmt(r.pop)}</td>
       <td class="num hl">${r.total}</td>
       <td class="num">

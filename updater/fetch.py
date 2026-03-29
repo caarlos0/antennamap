@@ -88,10 +88,13 @@ def infer_tech(row: dict) -> str:
 
 def get_session_cookie() -> str:
     req = request.Request(f"{BASE_URL}/licenciamento.php")
-    with request.urlopen(req) as resp:
-        for header, value in resp.headers.items():
-            if header.lower() == "set-cookie" and "PHPSESSID" in value:
-                return value.split(";")[0]
+    try:
+        with request.urlopen(req, timeout=30) as resp:
+            for header, value in resp.headers.items():
+                if header.lower() == "set-cookie" and "PHPSESSID" in value:
+                    return value.split(";")[0]
+    except Exception as e:
+        raise RuntimeError(f"Failed to obtain session cookie: {e}") from e
     raise RuntimeError("Could not obtain session cookie")
 
 
@@ -116,8 +119,11 @@ def request_csv_export(cookie: str, ibge_code: str) -> str:
             "Content-Type": "application/x-www-form-urlencoded",
         },
     )
-    with request.urlopen(req) as resp:
-        body = json.loads(resp.read())
+    try:
+        with request.urlopen(req, timeout=30) as resp:
+            body = json.loads(resp.read())
+    except Exception as e:
+        raise RuntimeError(f"Failed to export CSV for {ibge_code}: {e}") from e
 
     redirect = body.get("redirectUrl") or body.get("submitUrl")
     if not redirect:
@@ -213,7 +219,7 @@ def to_json(rows: list[dict], municipio: str, seen: set) -> list[dict]:
     return antennas
 
 
-def main():
+def main() -> None:
     print("Obtendo sessão...", file=sys.stderr)
     cookie = get_session_cookie()
 

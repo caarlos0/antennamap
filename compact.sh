@@ -1,3 +1,6 @@
 #!/bin/sh
-jq -c . antennas.json >tmp.json && mv tmp.json antennas.json
-jq -c . population.json >tmp.json && mv tmp.json population.json
+set -e
+tmp=$(mktemp) || exit 1
+trap 'rm -f "$tmp"' EXIT
+jq -c . antennas.json >"$tmp" && mv "$tmp" antennas.json
+jq -c . population.json >"$tmp" && mv "$tmp" population.json
