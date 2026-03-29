@@ -1152,7 +1152,9 @@
 
         // Update charts (top 20 only)
         const TOP_N = 20;
-        const ordered = [...rows].sort((a, b) => b.per10k - a.per10k);
+        const ordered = [...rows]
+          .filter((r) => r.pop >= POP_THRESHOLD)
+          .sort((a, b) => b.per10k - a.per10k);
         const top = ordered.slice(0, TOP_N);
         if (chartPerCapita) {
           chartPerCapita.data.labels = top.map((r) =>
@@ -1179,6 +1181,7 @@
 
         if (chartTech) {
           const byTotal = [...rows]
+            .filter((r) => r.pop >= POP_THRESHOLD)
             .sort((a, b) => {
               const ta = Object.values(a.techs).reduce((s, v) => s + v, 0);
               const tb = Object.values(b.techs).reduce((s, v) => s + v, 0);
@@ -1336,6 +1339,7 @@
 
         const initRows = deriveStateRows("Todos", "");
         const ordered = [...initRows]
+          .filter((r) => r.pop >= POP_THRESHOLD)
           .sort((a, b) => {
             const ta = Object.values(a.techs).reduce((s, v) => s + v, 0);
             const tb = Object.values(b.techs).reduce((s, v) => s + v, 0);
