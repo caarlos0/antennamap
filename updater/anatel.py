@@ -3,6 +3,9 @@
 Downloads ANATEL antenna licensing data for all Brazilian states
 and outputs per-state JSON files in data/antennas/.
 
+Uses per-state bulk export (fa_gsearch=2) — one request per state
+instead of one per municipality.
+
 Usage:
     uv run anatel.py              # Fetch all states
     uv run anatel.py --uf PR SP   # Fetch specific states
@@ -11,7 +14,6 @@ Usage:
 
 import argparse
 import csv
-import gzip
 import html
 import io
 import json
@@ -23,9 +25,6 @@ from pathlib import Path
 from urllib import request, parse
 
 BASE_URL = "https://sistemas.anatel.gov.br/se/public/view/b"
-IBGE_MUNICIPALITIES_URL = (
-    "https://servicodados.ibge.gov.br/api/v1/localidades/estados/{uf}/municipios"
-)
 
 DATA_DIR = Path(__file__).parent.parent / "data" / "antennas"
 
@@ -54,31 +53,7 @@ ALL_UFS = [
 
 MAX_RETRIES = 3
 RETRY_DELAY = 5
-REQUEST_DELAY = 1
-COOKIE_REFRESH_EVERY = 200
-
-
-# ── IBGE helpers ─────────────────────────────────────────────────────────────
-
-
-def fetch_ibge_json(url: str):
-    """Fetch JSON from IBGE, handling their automatic gzip."""
-    with request.urlopen(url, timeout=30) as resp:
-        raw = resp.read()
-    if raw[:2] == b"\x1f\x8b":
-        raw = gzip.decompress(raw)
-    return json.loads(raw.decode("utf-8"))
-
-
-def fetch_municipalities(uf: str) -> list[tuple[str, str]]:
-    """Fetch municipalities for a state from IBGE.
-
-    Returns sorted list of (ibge_code, name).
-    """
-    data = fetch_ibge_json(IBGE_MUNICIPALITIES_URL.format(uf=uf))
-    result = [(str(m["id"]), m["nome"]) for m in data]
-    result.sort(key=lambda x: x[1])
-    return result
+REQUEST_DELAY = 2
 
 
 # ── ANATEL helpers ───────────────────────────────────────────────────────────
@@ -114,16 +89,16 @@ def get_session_cookie() -> str:
     raise RuntimeError("Could not obtain ANATEL session cookie")
 
 
-def request_csv_export(cookie: str, uf: str, ibge_code: str) -> str:
+def export_state_csv(cookie: str, uf: str) -> str:
+    """Request a CSV export for an entire state. Returns the download path."""
     params = parse.urlencode({
         "skip": "0",
         "filter": "-1",
         "rpp": "50",
         "wfid": "licencas",
         "view": "0",
-        "fa_gsearch": "3",
+        "fa_gsearch": "2",
         "fa_uf": uf,
-        "fa_municipio": ibge_code,
     }).encode()
 
     req = request.Request(
@@ -135,7 +110,7 @@ def request_csv_export(cookie: str, uf: str, ibge_code: str) -> str:
             "Content-Type": "application/x-www-form-urlencoded",
         },
     )
-    with request.urlopen(req, timeout=60) as resp:
+    with request.urlopen(req, timeout=120) as resp:
         body = json.loads(resp.read())
 
     redirect = body.get("redirectUrl") or body.get("submitUrl")
@@ -149,7 +124,7 @@ def download_csv(cookie: str, path: str) -> list[dict]:
         f"https://sistemas.anatel.gov.br{path}",
         headers={"Cookie": cookie},
     )
-    with request.urlopen(req, timeout=120) as resp:
+    with request.urlopen(req, timeout=300) as resp:
         raw = resp.read()
 
     with zipfile.ZipFile(io.BytesIO(raw)) as zf:
@@ -169,28 +144,10 @@ def normalize_entity(name: str) -> str:
     return ENTITY_ALIASES.get(name, name)
 
 
-def fetch_with_retry(cookie: str, uf: str, ibge_code: str) -> list[dict]:
-    """Fetch CSV from ANATEL with retry + exponential backoff."""
-    for attempt in range(MAX_RETRIES):
-        try:
-            file_path = request_csv_export(cookie, uf, ibge_code)
-            return download_csv(cookie, file_path)
-        except Exception as e:
-            if attempt == MAX_RETRIES - 1:
-                raise
-            delay = RETRY_DELAY * (2 ** attempt)
-            print(
-                f"    Erro (tentativa {attempt + 1}): {e}. "
-                f"Retentando em {delay}s...",
-                file=sys.stderr,
-            )
-            time.sleep(delay)
-    return []  # unreachable
-
-
-def rows_to_antennas(rows: list[dict], municipio: str, seen: set) -> list[dict]:
-    """Convert ANATEL CSV rows to antenna dicts, deduplicating via seen set."""
+def rows_to_antennas(rows: list[dict]) -> list[dict]:
+    """Convert ANATEL CSV rows to antenna dicts."""
     one_year_ago = date.today() - timedelta(days=365)
+    seen: set[tuple] = set()
     antennas = []
 
     for row in rows:
@@ -199,6 +156,7 @@ def rows_to_antennas(rows: list[dict], municipio: str, seen: set) -> list[dict]:
         lat_s = normalize(row.get("Latitude", ""))
         lon_s = normalize(row.get("Longitude", ""))
         date_s = normalize(row.get("DataPrimeiroLicenciamento", ""))
+        municipio = normalize(row.get("Municipio.NomeMunicipio", ""))
 
         if not lat_s or not lon_s:
             continue
@@ -233,7 +191,7 @@ def rows_to_antennas(rows: list[dict], municipio: str, seen: set) -> list[dict]:
         antennas.append({
             "operadora": html.escape(entity),
             "tecnologia": tech,
-            "municipio": html.escape(municipio),
+            "municipio": html.escape(municipio) if municipio else "Desconhecido",
             "lat": lat,
             "lon": lon,
             "data": date_fmt,
@@ -243,48 +201,23 @@ def rows_to_antennas(rows: list[dict], municipio: str, seen: set) -> list[dict]:
     return antennas
 
 
-# ── Per-state fetching ───────────────────────────────────────────────────────
-
-
-def fetch_state(
-    cookie: str,
-    uf: str,
-    municipalities: list[tuple[str, str]],
-) -> tuple[list[dict], int]:
-    """Fetch all antennas for a state, municipality by municipality.
-
-    Returns (antennas, requests_made).
-    """
-    seen: set[tuple] = set()
-    state_antennas: list[dict] = []
-    errors = 0
-
-    for i, (ibge_code, name) in enumerate(municipalities, 1):
-        print(
-            f"  [{i}/{len(municipalities)}] {name} ({ibge_code})...",
-            end=" ", file=sys.stderr, flush=True,
-        )
+def fetch_state_with_retry(cookie: str, uf: str) -> list[dict]:
+    """Fetch all rows for a state with retry + exponential backoff."""
+    for attempt in range(MAX_RETRIES):
         try:
-            rows = fetch_with_retry(cookie, uf, ibge_code)
-            antennas = rows_to_antennas(rows, name, seen)
+            file_path = export_state_csv(cookie, uf)
+            return download_csv(cookie, file_path)
+        except Exception as e:
+            if attempt == MAX_RETRIES - 1:
+                raise
+            delay = RETRY_DELAY * (2 ** attempt)
             print(
-                f"{len(rows)} registros → {len(antennas)} antenas",
+                f"  Erro (tentativa {attempt + 1}): {e}. "
+                f"Retentando em {delay}s...",
                 file=sys.stderr,
             )
-            state_antennas.extend(antennas)
-        except Exception as e:
-            print(f"ERRO: {e}", file=sys.stderr)
-            errors += 1
-
-        time.sleep(REQUEST_DELAY)
-
-    if errors:
-        print(
-            f"  ⚠ {errors} município(s) com erro em {uf}",
-            file=sys.stderr,
-        )
-
-    return state_antennas, len(municipalities)
+            time.sleep(delay)
+    return []  # unreachable
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
@@ -332,46 +265,41 @@ def main() -> None:
     cookie = get_session_cookie()
 
     grand_total = 0
-    requests_since_refresh = 0
 
     for state_idx, uf in enumerate(target_ufs, 1):
-        print(f"\n{'=' * 60}", file=sys.stderr)
         print(
-            f"[{state_idx}/{len(target_ufs)}] Buscando municípios de {uf}...",
-            file=sys.stderr,
+            f"\n[{state_idx}/{len(target_ufs)}] {uf}...",
+            end=" ", file=sys.stderr, flush=True,
         )
 
-        municipalities = fetch_municipalities(uf)
-        print(f"  {len(municipalities)} municípios", file=sys.stderr)
+        try:
+            rows = fetch_state_with_retry(cookie, uf)
+            antennas = rows_to_antennas(rows)
 
-        # Refresh session cookie periodically
-        if requests_since_refresh >= COOKIE_REFRESH_EVERY:
-            print("Renovando sessão ANATEL...", file=sys.stderr)
+            out_path = DATA_DIR / f"{uf}.json"
+            out = json.dumps(antennas, ensure_ascii=False)
+            out_path.write_text(out, encoding="utf-8")
+
+            size_kb = len(out.encode()) / 1024
+            print(
+                f"{len(rows)} registros → {len(antennas)} antenas "
+                f"({size_kb:.1f} KB)",
+                file=sys.stderr,
+            )
+            grand_total += len(antennas)
+        except Exception as e:
+            print(f"ERRO: {e}", file=sys.stderr)
+
+        # Refresh cookie every 10 states
+        if state_idx % 10 == 0 and state_idx < len(target_ufs):
             try:
                 cookie = get_session_cookie()
-                requests_since_refresh = 0
-            except Exception as e:
-                print(f"  Aviso: {e}", file=sys.stderr)
+            except Exception:
+                pass
 
-        state_antennas, reqs = fetch_state(cookie, uf, municipalities)
-        requests_since_refresh += reqs
+        time.sleep(REQUEST_DELAY)
 
-        out_path = DATA_DIR / f"{uf}.json"
-        out = json.dumps(state_antennas, ensure_ascii=False)
-        out_path.write_text(out, encoding="utf-8")
-
-        size_kb = len(out.encode()) / 1024
-        print(
-            f"\n  {uf}: {len(state_antennas)} antenas — {size_kb:.1f} KB",
-            file=sys.stderr,
-        )
-        grand_total += len(state_antennas)
-
-    print(f"\n{'=' * 60}", file=sys.stderr)
-    print(
-        f"Total: {grand_total} antenas em {len(target_ufs)} estados",
-        file=sys.stderr,
-    )
+    print(f"\nTotal: {grand_total} antenas em {len(target_ufs)} estados", file=sys.stderr)
     print(f"Arquivos em {DATA_DIR}/", file=sys.stderr)
 
 
