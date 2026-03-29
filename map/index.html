@@ -486,8 +486,30 @@
         `;
       }
 
+      // ── URL hash for shareable view ────────────────────────────────────────────
+      function parseHash() {
+        const m = location.hash.match(
+          /^#(-?\d+\.?\d*),(-?\d+\.?\d*),(\d+\.?\d*)z$/,
+        );
+        if (!m) return null;
+        return { lat: +m[1], lon: +m[2], zoom: +m[3] };
+      }
+
+      function syncHash() {
+        const { lat, lng } = map.getCenter();
+        history.replaceState(
+          null,
+          "",
+          `#${lat.toFixed(4)},${lng.toFixed(4)},${map.getZoom()}z`,
+        );
+      }
+
       // ── Map ────────────────────────────────────────────────────────────────────
-      const map = L.map("map").setView([-14.2, -51.9], 4);
+      const saved = parseHash();
+      const map = L.map("map").setView(
+        saved ? [saved.lat, saved.lon] : [-14.2, -51.9],
+        saved ? saved.zoom : 4,
+      );
 
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
@@ -853,10 +875,11 @@
           map.on("moveend", () => {
             clearTimeout(tileTimer);
             tileTimer = setTimeout(loadVisibleTiles, 200);
+            syncHash();
           });
           updateZoomHint();
           await loadVisibleTiles();
-          tryGeolocation();
+          if (!saved) tryGeolocation();
         } catch (err) {
           console.error("erro ao inicializar", err);
           document.getElementById("map").innerHTML =
