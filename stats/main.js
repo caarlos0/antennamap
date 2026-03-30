@@ -123,7 +123,7 @@ let sortCol = "per10k",
 let municipalitiesIndex = null;
 const stateDataCache = {};
 let searchIndex = [];
-let renderChips = () => {};
+let renderChips = () => { };
 
 function getMode() {
   if (selection.cities.length > 0) return "comparison";
@@ -211,7 +211,7 @@ function initScopeSelector() {
   const results = document.getElementById("scope-results");
   let activeIdx = -1;
 
-  renderChips = function () {
+  renderChips = function() {
     wrap.querySelectorAll(".scope-chip").forEach((c) => c.remove());
     for (const uf of selection.states) {
       const chip = document.createElement("span");
@@ -225,11 +225,6 @@ function initScopeSelector() {
       chip.innerHTML = `${c.name} <span style="color:var(--muted)">(${c.uf})</span> <button data-type="city" data-idx="${i}">\u00d7</button>`;
       wrap.insertBefore(chip, input);
     });
-    const hasSelection =
-      selection.states.size > 0 || selection.cities.length > 0;
-    input.placeholder = hasSelection
-      ? "Adicionar..."
-      : "Buscar estado ou cidade...";
   };
 
   function addItem(type, data) {
@@ -937,17 +932,17 @@ function applyFilter(tech, op) {
     chartPerCapita.data.datasets[0].backgroundColor =
       tech === "Todos"
         ? top.map((r) =>
-            !isComp && r.pop < POP_THRESHOLD
-              ? "rgba(255,255,255,.18)"
-              : r.has5g
-                ? "rgba(0,204,153,.75)"
-                : "rgba(59,130,246,.6)",
-          )
+          !isComp && r.pop < POP_THRESHOLD
+            ? "rgba(255,255,255,.18)"
+            : r.has5g
+              ? "rgba(0,204,153,.75)"
+              : "rgba(59,130,246,.6)",
+        )
         : top.map((r) =>
-            !isComp && r.pop < POP_THRESHOLD
-              ? "rgba(255,255,255,.18)"
-              : techColor + "bf",
-          );
+          !isComp && r.pop < POP_THRESHOLD
+            ? "rgba(255,255,255,.18)"
+            : techColor + "bf",
+        );
     chartPerCapita.update();
   }
 
@@ -1030,15 +1025,15 @@ function renderDetailTable(data, maxPer10k, barColor) {
             </td>
             <td class="num">${r.newPct > 0 ? fmtF(r.newPct) + "%" : "—"}</td>
             <td>${stackBar(
-              r.ops,
-              OP_COLOR,
-              Object.values(r.ops).reduce((s, v) => s + v, 0),
-            )}</td>
+        r.ops,
+        OP_COLOR,
+        Object.values(r.ops).reduce((s, v) => s + v, 0),
+      )}</td>
             <td>${stackBar(
-              r.techs,
-              TECH_COLOR,
-              Object.values(r.techs).reduce((s, v) => s + v, 0),
-            )}</td>
+        r.techs,
+        TECH_COLOR,
+        Object.values(r.techs).reduce((s, v) => s + v, 0),
+      )}</td>
           </tr>`,
     )
     .join("");
