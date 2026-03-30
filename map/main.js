@@ -67,11 +67,11 @@ function buildFilter() {
   const conditions = [];
 
   if (activeTech !== "Todos") {
-    conditions.push(["==", ["get", `has_${activeTech.toLowerCase()}`], true]);
+    conditions.push(["in", activeTech, ["get", "techs"]]);
   }
 
   if (activeOp) {
-    conditions.push(["==", ["get", `has_${activeOp.toLowerCase()}`], true]);
+    conditions.push(["in", activeOp, ["get", "ops"]]);
   }
 
   if (conditions.length === 0) return null;

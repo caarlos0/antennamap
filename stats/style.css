@@ -218,8 +218,8 @@ footer {
   gap: 4px;
   padding: 3px 8px;
   border: 1px solid #333;
-  border-radius: 4px;
-  background: #222;
+  border-radius: 6px;
+  background: rgba(15, 15, 15, 0.92);
   min-height: 28px;
   cursor: text;
 }
@@ -260,12 +260,15 @@ footer {
 #scope-input {
   border: none;
   background: transparent;
-  color: #aaa;
+  color: #e6edf3;
   font-size: 16px;
   font-family: inherit;
   outline: none;
   flex: 1;
   min-width: 100px;
+}
+#scope-input::placeholder {
+  color: #555;
 }
 #scope-results {
   display: none;
