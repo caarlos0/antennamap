@@ -502,7 +502,11 @@
       const DEFAULT_VIEW = { lat: -14.2, lon: -51.9, zoom: 4 };
       const { lat, lon, zoom } = parseHash() || DEFAULT_VIEW;
       const hasHashView = location.hash.length > 1;
-      const map = L.map("map").setView([lat, lon], zoom);
+      const map = L.map("map", { zoomControl: false }).setView(
+        [lat, lon],
+        zoom,
+      );
+      L.control.zoom({ position: "bottomright" }).addTo(map);
 
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
