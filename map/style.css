@@ -1,0 +1,127 @@
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+/* ── Map ───────────────────────── */
+#map-wrap {
+  flex: 1;
+  position: relative;
+}
+#map {
+  height: 100%;
+}
+
+/* ── Popup ──────────────────────── */
+.maplibregl-popup-content {
+  background: #1a1a1a !important;
+  color: #ddd;
+  border: 1px solid #333;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  line-height: 1.8;
+}
+.maplibregl-popup-content strong {
+  color: #fff;
+}
+.maplibregl-popup-tip {
+  border-top-color: #1a1a1a !important;
+}
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: #1a1a1a !important;
+}
+.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: #1a1a1a !important;
+}
+.maplibregl-popup-close-button {
+  color: #888;
+  font-size: 18px;
+}
+.popup-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.popup-row svg {
+  width: 13px;
+  height: 13px;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+/* ── Search ─────────────────────── */
+#search-container {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  width: 280px;
+}
+#search-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 12px 8px 32px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: rgba(15, 15, 15, 0.92);
+  color: #e6edf3;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  backdrop-filter: blur(8px);
+}
+#search-input::placeholder {
+  color: #555;
+}
+#search-input:focus {
+  border-color: #0c9;
+}
+.search-icon {
+  position: absolute;
+  top: 9px;
+  left: 10px;
+  width: 14px;
+  height: 14px;
+  color: #555;
+  pointer-events: none;
+}
+#search-results {
+  display: none;
+  margin-top: 4px;
+  background: rgba(20, 20, 20, 0.95);
+  border: 1px solid #333;
+  border-radius: 6px;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+}
+.search-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  border-bottom: 1px solid #222;
+}
+.search-item:last-child {
+  border-bottom: none;
+}
+.search-item:hover,
+.search-item.active {
+  background: rgba(255, 255, 255, 0.05);
+}
+.search-name {
+  color: #e6edf3;
+  font-weight: 500;
+}
+
+@media (max-width: 599px) {
+  #search-container {
+    left: 10px;
+    right: 10px;
+    width: auto;
+  }
+}
