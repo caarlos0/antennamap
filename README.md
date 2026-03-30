@@ -2,8 +2,6 @@
 
 Mapa e estatísticas de torres de telecomunicação de todo o Brasil.
 
-Criado por [Carlos A Becker](https://caarlos0.dev) usando [GitHub Copilot](https://github.com/features/copilot).
-
 ## Fontes
 
 - **[ANATEL](https://sistemas.anatel.gov.br)** — Dados de torres
