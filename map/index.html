@@ -495,21 +495,11 @@
         return { lat: +m[1], lon: +m[2], zoom: +m[3] };
       }
 
-      function syncHash() {
-        const { lat, lng } = map.getCenter();
-        history.replaceState(
-          null,
-          "",
-          `#${lat.toFixed(4)},${lng.toFixed(4)},${map.getZoom()}z`,
-        );
-      }
-
       // ── Map ────────────────────────────────────────────────────────────────────
-      const saved = parseHash();
-      const map = L.map("map").setView(
-        saved ? [saved.lat, saved.lon] : [-14.2, -51.9],
-        saved ? saved.zoom : 4,
-      );
+      const DEFAULT_VIEW = { lat: -14.2, lon: -51.9, zoom: 4 };
+      const { lat, lon, zoom } = parseHash() || DEFAULT_VIEW;
+      const hasHashView = location.hash.length > 1;
+      const map = L.map("map").setView([lat, lon], zoom);
 
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
@@ -520,6 +510,15 @@
           maxZoom: 19,
         },
       ).addTo(map);
+
+      function syncHash() {
+        const c = map.getCenter();
+        history.replaceState(
+          null,
+          "",
+          `#${c.lat.toFixed(4)},${c.lng.toFixed(4)},${map.getZoom()}z`,
+        );
+      }
 
       // ── State ──────────────────────────────────────────────────────────────────
       let allMarkers = [];
@@ -879,7 +878,7 @@
           });
           updateZoomHint();
           await loadVisibleTiles();
-          if (!saved) tryGeolocation();
+          if (!hasHashView) tryGeolocation();
         } catch (err) {
           console.error("erro ao inicializar", err);
           document.getElementById("map").innerHTML =
