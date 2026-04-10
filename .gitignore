@@ -1,3 +1,4 @@
+.wrangler/
 __pycache__
 data/towers.pmtiles
 node_modules/
