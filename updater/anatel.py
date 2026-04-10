@@ -4,12 +4,13 @@ Downloads ANATEL antenna licensing data for all Brazilian states
 and outputs per-state JSON files in data/antennas/.
 
 Uses per-state bulk export (fa_gsearch=2) — one request per state
-instead of one per municipality.
+instead of one per municipality. Fetches multiple states in parallel.
 
 Usage:
-    uv run anatel.py              # Fetch all states
-    uv run anatel.py --uf PR SP   # Fetch specific states
-    uv run anatel.py --resume     # Skip states with existing output files
+    uv run anatel.py                  # Fetch all states (4 workers)
+    uv run anatel.py --workers 8      # Fetch with 8 parallel workers
+    uv run anatel.py --uf PR SP       # Fetch specific states
+    uv run anatel.py --resume         # Skip states with existing output files
 """
 
 import argparse
@@ -18,8 +19,10 @@ import html
 import io
 import json
 import sys
+import threading
 import time
 import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 from pathlib import Path
 from urllib import request, parse
@@ -58,7 +61,15 @@ ALL_UFS = [
 
 MAX_RETRIES = 3
 RETRY_DELAY = 5
-REQUEST_DELAY = 2
+
+_print_lock = threading.Lock()
+_thread_cookies = threading.local()
+
+
+def _log(msg: str, **kwargs) -> None:
+    """Thread-safe stderr print."""
+    with _print_lock:
+        print(msg, file=sys.stderr, flush=True, **kwargs)
 
 
 # ── ANATEL helpers ───────────────────────────────────────────────────────────
@@ -92,6 +103,20 @@ def get_session_cookie() -> str:
             if header.lower() == "set-cookie" and "PHPSESSID" in value:
                 return value.split(";")[0]
     raise RuntimeError("Could not obtain ANATEL session cookie")
+
+
+def get_thread_cookie() -> str:
+    """Return a session cookie for the current thread, creating one if needed."""
+    cookie = getattr(_thread_cookies, "cookie", None)
+    if cookie is None:
+        cookie = get_session_cookie()
+        _thread_cookies.cookie = cookie
+    return cookie
+
+
+def refresh_thread_cookie() -> None:
+    """Force-refresh the session cookie for the current thread."""
+    _thread_cookies.cookie = get_session_cookie()
 
 
 def export_state_csv(cookie: str, uf: str) -> str:
@@ -208,26 +233,47 @@ def rows_to_antennas(rows: list[dict]) -> list[dict]:
     return antennas
 
 
-def fetch_state_with_retry(cookie: str, uf: str) -> list[dict]:
-    """Fetch all rows for a state with retry + exponential backoff."""
+def fetch_state_with_retry(uf: str) -> list[dict]:
+    """Fetch all rows for a state with retry + exponential backoff.
+
+    Uses a per-thread session cookie, refreshing it on failure.
+    """
     for attempt in range(MAX_RETRIES):
         try:
+            cookie = get_thread_cookie()
             file_path = export_state_csv(cookie, uf)
             return download_csv(cookie, file_path)
         except Exception as e:
             if attempt == MAX_RETRIES - 1:
                 raise
             delay = RETRY_DELAY * (2 ** attempt)
-            print(
-                f"  Erro (tentativa {attempt + 1}): {e}. "
-                f"Retentando em {delay}s...",
-                file=sys.stderr,
+            _log(
+                f"  [{uf}] Erro (tentativa {attempt + 1}): {e}. "
+                f"Retentando em {delay}s..."
             )
+            try:
+                refresh_thread_cookie()
+            except Exception:
+                pass
             time.sleep(delay)
     return []  # unreachable
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
+
+
+def process_state(uf: str) -> tuple[str, int, int, float]:
+    """Fetch and save one state. Returns (uf, raw_rows, antennas, size_kb)."""
+    _log(f"  {uf}: baixando...")
+    rows = fetch_state_with_retry(uf)
+    antennas = rows_to_antennas(rows)
+
+    out = json.dumps(antennas, ensure_ascii=False, indent=2)
+    out_path = DATA_DIR / f"{uf}.json"
+    out_path.write_text(out, encoding="utf-8")
+
+    size_kb = len(out.encode()) / 1024
+    return uf, len(rows), len(antennas), size_kb
 
 
 def main() -> None:
@@ -241,6 +287,10 @@ def main() -> None:
     parser.add_argument(
         "--resume", action="store_true",
         help="Skip states that already have output files",
+    )
+    parser.add_argument(
+        "--workers", type=int, default=4, metavar="N",
+        help="Number of parallel downloads (default: 4)",
     )
     args = parser.parse_args()
 
@@ -267,46 +317,35 @@ def main() -> None:
         print("Nenhum estado para buscar.", file=sys.stderr)
         return
 
+    total = len(target_ufs)
+    workers = min(args.workers, total)
     print(f"Estados: {', '.join(target_ufs)}", file=sys.stderr)
-    print("Obtendo sessão ANATEL...", file=sys.stderr)
-    cookie = get_session_cookie()
+    print(f"Workers: {workers}", file=sys.stderr)
 
     grand_total = 0
+    done_count = 0
 
-    for state_idx, uf in enumerate(target_ufs, 1):
-        print(
-            f"\n[{state_idx}/{len(target_ufs)}] {uf}...",
-            end=" ", file=sys.stderr, flush=True,
-        )
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(process_state, uf): uf for uf in target_ufs}
 
-        try:
-            rows = fetch_state_with_retry(cookie, uf)
-            antennas = rows_to_antennas(rows)
-
-            out_path = DATA_DIR / f"{uf}.json"
-            out = json.dumps(antennas, ensure_ascii=False, indent=2)
-            out_path.write_text(out, encoding="utf-8")
-
-            size_kb = len(out.encode()) / 1024
-            print(
-                f"{len(rows)} registros → {len(antennas)} antenas "
-                f"({size_kb:.1f} KB)",
-                file=sys.stderr,
-            )
-            grand_total += len(antennas)
-        except Exception as e:
-            print(f"ERRO: {e}", file=sys.stderr)
-
-        # Refresh cookie every 10 states
-        if state_idx % 10 == 0 and state_idx < len(target_ufs):
+        for future in as_completed(futures):
+            uf = futures[future]
+            done_count += 1
             try:
-                cookie = get_session_cookie()
-            except Exception:
-                pass
+                _, raw, count, size_kb = future.result()
+            except Exception as e:
+                _log(f"[{done_count}/{total}] {uf}: ERRO: {e}")
+                for f in futures:
+                    f.cancel()
+                sys.exit(1)
 
-        time.sleep(REQUEST_DELAY)
+            grand_total += count
+            _log(
+                f"[{done_count}/{total}] {uf}: "
+                f"{raw} registros → {count} antenas ({size_kb:.1f} KB)"
+            )
 
-    print(f"\nTotal: {grand_total} antenas em {len(target_ufs)} estados", file=sys.stderr)
+    print(f"\nTotal: {grand_total} antenas em {total} estados", file=sys.stderr)
     print(f"Arquivos em {DATA_DIR}/", file=sys.stderr)
 
 
