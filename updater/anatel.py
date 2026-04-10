@@ -262,9 +262,9 @@ def fetch_state_with_retry(uf: str) -> list[dict]:
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 
-def process_state(uf: str) -> tuple[str, int, int, float]:
+def process_state(uf: str, index: int, total: int) -> tuple[str, int, int, float]:
     """Fetch and save one state. Returns (uf, raw_rows, antennas, size_kb)."""
-    _log(f"  {uf}: baixando...")
+    _log(f"[{index}/{total}] {uf}: baixando...")
     rows = fetch_state_with_retry(uf)
     antennas = rows_to_antennas(rows)
 
@@ -326,7 +326,10 @@ def main() -> None:
     done_count = 0
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {pool.submit(process_state, uf): uf for uf in target_ufs}
+        futures = {
+            pool.submit(process_state, uf, idx, total): uf
+            for idx, uf in enumerate(target_ufs, 1)
+        }
 
         for future in as_completed(futures):
             uf = futures[future]
@@ -334,16 +337,13 @@ def main() -> None:
             try:
                 _, raw, count, size_kb = future.result()
             except Exception as e:
-                _log(f"[{done_count}/{total}] {uf}: ERRO: {e}")
+                _log(f"  {uf}: ERRO: {e}")
                 for f in futures:
                     f.cancel()
                 sys.exit(1)
 
             grand_total += count
-            _log(
-                f"[{done_count}/{total}] {uf}: "
-                f"{raw} registros → {count} antenas ({size_kb:.1f} KB)"
-            )
+            _log(f"  {uf}: {raw} registros → {count} antenas ({size_kb:.1f} KB)")
 
     print(f"\nTotal: {grand_total} antenas em {total} estados", file=sys.stderr)
     print(f"Arquivos em {DATA_DIR}/", file=sys.stderr)
