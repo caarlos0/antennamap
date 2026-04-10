@@ -230,6 +230,7 @@ def rows_to_antennas(rows: list[dict]) -> list[dict]:
             "nova": new_antenna,
         })
 
+    antennas.sort(key=lambda a: (a["data"], a["municipio"], a["tecnologia"], a["operadora"], a["lat"], a["lon"]))
     return antennas
 
 
