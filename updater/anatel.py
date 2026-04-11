@@ -17,6 +17,7 @@ import argparse
 import csv
 import io
 import json
+import os
 import sys
 import threading
 import time
@@ -404,7 +405,8 @@ def main() -> None:
     grand_total = 0
     done_count = 0
 
-    with ThreadPoolExecutor(max_workers=workers) as pool:
+    pool = ThreadPoolExecutor(max_workers=workers)
+    try:
         futures = {
             pool.submit(process_state, uf, idx, total): uf
             for idx, uf in enumerate(target_ufs, 1)
@@ -417,12 +419,17 @@ def main() -> None:
                 _, raw, count, size_kb = future.result()
             except Exception as e:
                 _log(f"  {uf}: ERRO: {e}")
-                for f in futures:
-                    f.cancel()
-                sys.exit(1)
+                pool.shutdown(wait=False, cancel_futures=True)
+                os._exit(1)
 
             grand_total += count
             _log(f"  {uf}: {raw} registros → {count} antenas ({size_kb:.1f} KB)")
+    except KeyboardInterrupt:
+        _log("\nInterrompido pelo usuário.")
+        pool.shutdown(wait=False, cancel_futures=True)
+        os._exit(130)
+
+    pool.shutdown(wait=True)
 
     print(f"\nTotal: {grand_total} antenas em {total} estados", file=sys.stderr)
     print(f"Arquivos em {DATA_DIR}/", file=sys.stderr)
