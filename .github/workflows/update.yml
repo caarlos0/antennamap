@@ -25,9 +25,9 @@ jobs:
         working-directory: updater
         run: |
           if [ -n "${{ github.event.inputs.uf }}" ]; then
-            uv run anatel.py --workers 4 --uf ${{ github.event.inputs.uf }}
+            uv run anatel.py --uf ${{ github.event.inputs.uf }}
           else
-            uv run anatel.py --workers 4
+            uv run anatel.py
           fi
       - name: Fetch IBGE population data
         run: uv run ibge.py

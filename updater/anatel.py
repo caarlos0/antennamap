@@ -3,12 +3,11 @@
 Downloads ANATEL antenna licensing data for all Brazilian states
 and outputs per-state JSON files in data/antennas/.
 
-Uses the browser column-filter flow (fc_8=UF) to filter by state,
-then exports CSV. Fetches multiple states in parallel.
+Primes the ANATEL session filter, then exports CSV — one state at a time
+(ANATEL's server throttles concurrent exports).
 
 Usage:
-    uv run anatel.py                  # Fetch all states (4 workers)
-    uv run anatel.py --workers 8      # Fetch with 8 parallel workers
+    uv run anatel.py                  # Fetch all states
     uv run anatel.py --uf PR SP       # Fetch specific states
     uv run anatel.py --resume         # Skip states with existing output files
 """
@@ -17,12 +16,9 @@ import argparse
 import csv
 import io
 import json
-import os
 import sys
-import threading
 import time
 import zipfile
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 from pathlib import Path
 from urllib import request, parse
@@ -120,13 +116,9 @@ UF_CODES = {
 MAX_RETRIES = 3
 RETRY_DELAY = 5
 
-_print_lock = threading.Lock()
-
 
 def _log(msg: str, **kwargs) -> None:
-    """Thread-safe stderr print."""
-    with _print_lock:
-        print(msg, file=sys.stderr, flush=True, **kwargs)
+    print(msg, file=sys.stderr, flush=True, **kwargs)
 
 
 # ── ANATEL helpers ───────────────────────────────────────────────────────────
@@ -365,13 +357,6 @@ def main() -> None:
         action="store_true",
         help="Skip states that already have output files",
     )
-    parser.add_argument(
-        "--workers",
-        type=int,
-        default=4,
-        metavar="N",
-        help="Number of parallel downloads (default: 4)",
-    )
     args = parser.parse_args()
 
     target_ufs = sorted(args.uf) if args.uf else ALL_UFS
@@ -398,42 +383,22 @@ def main() -> None:
         return
 
     total = len(target_ufs)
-    workers = min(args.workers, total)
     print(f"Estados: {', '.join(target_ufs)}", file=sys.stderr)
-    print(f"Workers: {workers}", file=sys.stderr)
 
     grand_total = 0
-    done_count = 0
 
-    pool = ThreadPoolExecutor(max_workers=workers)
-    try:
-        futures = {
-            pool.submit(process_state, uf, idx, total): uf
-            for idx, uf in enumerate(target_ufs, 1)
-        }
-
-        for future in as_completed(futures):
-            uf = futures[future]
-            done_count += 1
-            try:
-                _, raw, count, size_kb = future.result()
-            except Exception as e:
-                _log(f"  {uf}: ERRO: {e}")
-                pool.shutdown(wait=False, cancel_futures=True)
-                os._exit(1)
-
-            grand_total += count
-            _log(f"  {uf}: {raw} registros → {count} antenas ({size_kb:.1f} KB)")
-    except KeyboardInterrupt:
-        _log("\nInterrompido pelo usuário.")
-        pool.shutdown(wait=False, cancel_futures=True)
-        os._exit(130)
-
-    pool.shutdown(wait=True)
+    for idx, uf in enumerate(target_ufs, 1):
+        uf_name, raw, count, size_kb = process_state(uf, idx, total)
+        grand_total += count
+        _log(f"  {uf}: {raw} registros → {count} antenas ({size_kb:.1f} KB)")
 
     print(f"\nTotal: {grand_total} antenas em {total} estados", file=sys.stderr)
     print(f"Arquivos em {DATA_DIR}/", file=sys.stderr)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nInterrompido pelo usuário.", file=sys.stderr)
+        sys.exit(130)
