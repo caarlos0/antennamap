@@ -3,8 +3,8 @@
 Downloads ANATEL antenna licensing data for all Brazilian states
 and outputs per-state JSON files in data/antennas/.
 
-Uses per-state bulk export (fa_gsearch=2) — one request per state
-instead of one per municipality. Fetches multiple states in parallel.
+Uses the browser column-filter flow (fc_8=UF) to filter by state,
+then exports CSV. Fetches multiple states in parallel.
 
 Usage:
     uv run anatel.py                  # Fetch all states (4 workers)
@@ -15,7 +15,6 @@ Usage:
 
 import argparse
 import csv
-import html
 import io
 import json
 import sys
@@ -26,10 +25,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 from pathlib import Path
 from urllib import request, parse
+from urllib.error import URLError
 
 BASE_URL = "https://sistemas.anatel.gov.br/se/public/view/b"
 
 DATA_DIR = Path(__file__).parent.parent / "data" / "antennas"
+
+csv.field_size_limit(sys.maxsize)  # ANATEL CSVs can have huge fields
 
 USER_FACING_TECH = {"5G", "4G", "3G", "2G"}
 
@@ -54,16 +56,70 @@ ENTITY_ALIASES = {
 ALLOWED_OPERATORS = {"Vivo", "Claro", "TIM"}
 
 ALL_UFS = [
-    "AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO",
-    "MA", "MG", "MS", "MT", "PA", "PB", "PE", "PI", "PR",
-    "RJ", "RN", "RO", "RR", "RS", "SC", "SE", "SP", "TO",
+    "AC",
+    "AL",
+    "AM",
+    "AP",
+    "BA",
+    "CE",
+    "DF",
+    "ES",
+    "GO",
+    "MA",
+    "MG",
+    "MS",
+    "MT",
+    "PA",
+    "PB",
+    "PE",
+    "PI",
+    "PR",
+    "RJ",
+    "RN",
+    "RO",
+    "RR",
+    "RS",
+    "SC",
+    "SE",
+    "SP",
+    "TO",
 ]
+
+# IBGE numeric codes for each UF (used to prime the ANATEL session filter).
+UF_CODES = {
+    "AC": 12,
+    "AL": 27,
+    "AM": 13,
+    "AP": 16,
+    "BA": 29,
+    "CE": 23,
+    "DF": 53,
+    "ES": 32,
+    "GO": 52,
+    "MA": 21,
+    "MG": 31,
+    "MS": 50,
+    "MT": 51,
+    "PA": 15,
+    "PB": 25,
+    "PE": 26,
+    "PI": 22,
+    "PR": 41,
+    "RJ": 33,
+    "RN": 24,
+    "RO": 11,
+    "RR": 14,
+    "RS": 43,
+    "SC": 42,
+    "SE": 28,
+    "SP": 35,
+    "TO": 17,
+}
 
 MAX_RETRIES = 3
 RETRY_DELAY = 5
 
 _print_lock = threading.Lock()
-_thread_cookies = threading.local()
 
 
 def _log(msg: str, **kwargs) -> None:
@@ -88,8 +144,13 @@ def infer_tech(row: dict) -> str:
     if freq > 1000 and ("D7W" in desig or "G7W" in desig or "Q7W" in desig):
         return "Backhaul"
 
-    narrow = ("F1E" in desig or "F1D" in desig or "F1W" in desig or
-              "F3E" in desig or "F2D" in desig)
+    narrow = (
+        "F1E" in desig
+        or "F1D" in desig
+        or "F1W" in desig
+        or "F3E" in desig
+        or "F2D" in desig
+    )
     if narrow and freq < 500:
         return "Radio"
 
@@ -105,31 +166,33 @@ def get_session_cookie() -> str:
     raise RuntimeError("Could not obtain ANATEL session cookie")
 
 
-def get_thread_cookie() -> str:
-    """Return a session cookie for the current thread, creating one if needed."""
-    cookie = getattr(_thread_cookies, "cookie", None)
-    if cookie is None:
-        cookie = get_session_cookie()
-        _thread_cookies.cookie = cookie
-    return cookie
-
-
-def refresh_thread_cookie() -> None:
-    """Force-refresh the session cookie for the current thread."""
-    _thread_cookies.cookie = get_session_cookie()
+def _prime_session(cookie: str, uf: str) -> None:
+    """Prime the server session by selecting the UF (populates server-side state)."""
+    code = UF_CODES[uf]
+    req = request.Request(
+        f"https://sistemas.anatel.gov.br/se/eApp/forms/b/jf_getMunicipios.php?CodUF={code}",
+        headers={
+            "Cookie": cookie,
+            "Referer": f"{BASE_URL}/licenciamento.php",
+        },
+    )
+    with request.urlopen(req, timeout=30) as resp:
+        resp.read()
 
 
 def export_state_csv(cookie: str, uf: str) -> str:
     """Request a CSV export for an entire state. Returns the download path."""
-    params = parse.urlencode({
-        "skip": "0",
-        "filter": "-1",
-        "rpp": "50",
-        "wfid": "licencas",
-        "view": "0",
-        "fa_gsearch": "2",
-        "fa_uf": uf,
-    }).encode()
+    params = parse.urlencode(
+        {
+            "skip": "0",
+            "filter": "-1",
+            "rpp": "50",
+            "wfid": "licencas",
+            "view": "0",
+            "fa_gsearch": "2",
+            "fa_uf": uf,
+        }
+    ).encode()
 
     req = request.Request(
         f"{BASE_URL}/export_licenciamento.php",
@@ -220,42 +283,51 @@ def rows_to_antennas(rows: list[dict]) -> list[dict]:
         else:
             date_fmt = ""
 
-        antennas.append({
-            "operadora": entity,
-            "tecnologia": tech,
-            "municipio": municipio if municipio else "Desconhecido",
-            "lat": lat,
-            "lon": lon,
-            "data": date_fmt,
-            "nova": new_antenna,
-        })
+        antennas.append(
+            {
+                "operadora": entity,
+                "tecnologia": tech,
+                "municipio": municipio if municipio else "Desconhecido",
+                "lat": lat,
+                "lon": lon,
+                "data": date_fmt,
+                "nova": new_antenna,
+            }
+        )
 
-    antennas.sort(key=lambda a: (a["data"], a["municipio"], a["tecnologia"], a["operadora"], a["lat"], a["lon"]))
+    antennas.sort(
+        key=lambda a: (
+            a["data"],
+            a["municipio"],
+            a["tecnologia"],
+            a["operadora"],
+            a["lat"],
+            a["lon"],
+        )
+    )
     return antennas
 
 
 def fetch_state_with_retry(uf: str) -> list[dict]:
     """Fetch all rows for a state with retry + exponential backoff.
 
-    Uses a per-thread session cookie, refreshing it on failure.
+    Uses a fresh session cookie per attempt, primes the session filter,
+    then exports the CSV.
     """
     for attempt in range(MAX_RETRIES):
         try:
-            cookie = get_thread_cookie()
+            cookie = get_session_cookie()
+            _prime_session(cookie, uf)
             file_path = export_state_csv(cookie, uf)
             return download_csv(cookie, file_path)
         except Exception as e:
             if attempt == MAX_RETRIES - 1:
                 raise
-            delay = RETRY_DELAY * (2 ** attempt)
+            delay = RETRY_DELAY * (2**attempt)
             _log(
-                f"  [{uf}] Erro (tentativa {attempt + 1}): {e}. "
+                f"  [{uf}] Tentativa {attempt + 1} falhou: {e}. "
                 f"Retentando em {delay}s..."
             )
-            try:
-                refresh_thread_cookie()
-            except Exception:
-                pass
             time.sleep(delay)
     return []  # unreachable
 
@@ -282,15 +354,21 @@ def main() -> None:
         description="Fetch ANATEL antenna data for Brazil",
     )
     parser.add_argument(
-        "--uf", nargs="*", metavar="UF",
+        "--uf",
+        nargs="*",
+        metavar="UF",
         help="States to fetch (default: all)",
     )
     parser.add_argument(
-        "--resume", action="store_true",
+        "--resume",
+        action="store_true",
         help="Skip states that already have output files",
     )
     parser.add_argument(
-        "--workers", type=int, default=4, metavar="N",
+        "--workers",
+        type=int,
+        default=4,
+        metavar="N",
         help="Number of parallel downloads (default: 4)",
     )
     args = parser.parse_args()
