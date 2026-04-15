@@ -23,6 +23,16 @@ altura da antena ou ganho.
 
 ## Desenvolvimento
 
+Instale as dependências e copie os arquivos de vendor antes de abrir o site
+localmente — sem isso a página abre em branco:
+
+```bash
+npm install
+npm run build
+```
+
+### Atualizando dados
+
 Os dados são coletados e processados por scripts Python no diretório `updater/`:
 
 ```bash
