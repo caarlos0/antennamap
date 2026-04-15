@@ -23,8 +23,20 @@ function parseHash() {
 }
 
 const DEFAULT_VIEW = { lat: -14.2, lon: -51.9, zoom: 4 };
-const { lat, lon, zoom } = parseHash() || DEFAULT_VIEW;
+
+function loadSavedView() {
+  try {
+    const raw = localStorage.getItem("temsinal-view");
+    if (!raw) return null;
+    const v = JSON.parse(raw);
+    if (isFinite(v.lat) && isFinite(v.lon) && isFinite(v.zoom)) return v;
+  } catch {}
+  return null;
+}
+
+const { lat, lon, zoom } = parseHash() || loadSavedView() || DEFAULT_VIEW;
 const hasHashView = location.hash.length > 1;
+const hasSavedView = !hasHashView && !!loadSavedView();
 
 // ── PMTiles protocol ───────────────────────────────────────────────────────
 const protocol = new pmtiles.Protocol();
@@ -46,10 +58,15 @@ map.addControl(new maplibregl.NavigationControl(), "bottom-right");
 
 function syncHash() {
   const c = map.getCenter();
+  const z = map.getZoom();
   history.replaceState(
     null,
     "",
-    `#${c.lat.toFixed(4)},${c.lng.toFixed(4)},${map.getZoom().toFixed(0)}z`,
+    `#${c.lat.toFixed(4)},${c.lng.toFixed(4)},${z.toFixed(0)}z`,
+  );
+  localStorage.setItem(
+    "temsinal-view",
+    JSON.stringify({ lat: c.lat, lon: c.lng, zoom: z }),
   );
 }
 map.on("moveend", syncHash);
@@ -412,7 +429,7 @@ async function init() {
       r.json(),
     );
     initSearch();
-    if (!hasHashView) tryGeolocation();
+    if (!hasHashView && !hasSavedView) tryGeolocation();
   } catch (err) {
     console.error("erro ao inicializar", err);
   }
