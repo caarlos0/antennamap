@@ -216,30 +216,13 @@ function initScopeSelector() {
     for (const uf of selection.states) {
       const chip = document.createElement("span");
       chip.className = "scope-chip state";
-      chip.textContent = uf + " ";
-      const btn = document.createElement("button");
-      btn.dataset.type = "state";
-      btn.dataset.uf = uf;
-      btn.textContent = "\u00d7";
-      chip.appendChild(btn);
+      chip.innerHTML = `${uf} <button data-type="state" data-uf="${uf}">\u00d7</button>`;
       wrap.insertBefore(chip, input);
     }
     selection.cities.forEach((c, i) => {
       const chip = document.createElement("span");
       chip.className = "scope-chip city";
-      chip.append(
-        c.name + " ",
-        Object.assign(document.createElement("span"), {
-          style: "color:var(--muted)",
-          textContent: `(${c.uf})`,
-        }),
-        " ",
-        Object.assign(document.createElement("button"), {
-          textContent: "\u00d7",
-        }),
-      );
-      chip.querySelector("button").dataset.type = "city";
-      chip.querySelector("button").dataset.idx = i;
+      chip.innerHTML = `${c.name} <span style="color:var(--muted)">(${c.uf})</span> <button data-type="city" data-idx="${i}">\u00d7</button>`;
       wrap.insertBefore(chip, input);
     });
   };
@@ -319,40 +302,26 @@ function initScopeSelector() {
         return;
       }
 
-      results.replaceChildren();
-      function makeItem(cls, text, dataset) {
-        const div = document.createElement("div");
-        div.className = cls;
-        div.textContent = text;
-        Object.assign(div.dataset, dataset);
-        return div;
-      }
+      let html = "";
       if (stateMatches.length) {
-        const label = document.createElement("div");
-        label.className = "scope-group-label";
-        label.textContent = "Estados";
-        results.append(
-          label,
-          ...stateMatches.map((e) =>
-            makeItem("scope-item", e.label, { type: "state", uf: e.uf }),
-          ),
-        );
+        html += '<div class="scope-group-label">Estados</div>';
+        html += stateMatches
+          .map(
+            (e) =>
+              `<div class="scope-item" data-type="state" data-uf="${e.uf}">${e.label}</div>`,
+          )
+          .join("");
       }
       if (cityMatches.length) {
-        const label = document.createElement("div");
-        label.className = "scope-group-label";
-        label.textContent = "Cidades";
-        results.append(
-          label,
-          ...cityMatches.map((e) =>
-            makeItem("scope-item", e.label, {
-              type: "city",
-              name: e.name,
-              uf: e.uf,
-            }),
-          ),
-        );
+        html += '<div class="scope-group-label">Cidades</div>';
+        html += cityMatches
+          .map(
+            (e) =>
+              `<div class="scope-item" data-type="city" data-name="${e.name}" data-uf="${e.uf}">${e.label}</div>`,
+          )
+          .join("");
       }
+      results.innerHTML = html;
       results.style.display = "block";
     }, 150);
   });
