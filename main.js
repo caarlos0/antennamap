@@ -161,6 +161,14 @@ function buildPopup(props) {
 }
 
 // ── Map layers ─────────────────────────────────────────────────────────────
+map.once("idle", () => {
+  const overlay = document.getElementById("map-loading");
+  if (overlay) {
+    overlay.classList.add("hidden");
+    overlay.addEventListener("transitionend", () => overlay.remove());
+  }
+});
+
 map.on("load", () => {
   map.addSource("towers", {
     type: "vector",
